@@ -1,0 +1,9 @@
+{
+  "name": "BudgetFlow Weekly",
+  "short_name": "BudgetFlow",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "description": "Simple weekly budget with carry forward, live spends, and weekly history."
+}
