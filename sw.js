@@ -1,4 +1,4 @@
-const CACHE='budgetflow-shared-v1';
+const CACHE='budgetflow-shared-couples-v1';
 const ASSETS=['./','./index.html','./manifest.json'];
 
 self.addEventListener('install',e=>{
