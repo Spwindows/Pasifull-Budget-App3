@@ -268,6 +268,32 @@ let latestServerTimestamp = null;
 let isApplyingRemote = false;
 
 const $ = id => document.getElementById(id);
+  function showSetupIfNeeded(){
+  if(localStorage.getItem("setupDone-" + budgetId)) return;
+  $("setupScreen").classList.remove("hidden");
+}
+
+function finishSetup(){
+  state.income = $("setupIncome").value || "0";
+  state.savingsTarget = $("setupSavings").value || "0";
+
+  const bills = $("setupBills").value;
+  if(bills && Number(bills) > 0){
+    state.bills = [{
+      id: Date.now(),
+      name: "General Bills",
+      amount: bills,
+      frequency: "weekly"
+    }];
+  }
+
+  localStorage.setItem("setupDone-" + budgetId, "true");
+
+  stateChanged();
+  renderAll();
+
+  $("setupScreen").classList.add("hidden");
+}
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 function showSetupIfNeeded(){
   if(localStorage.getItem("setupDone-" + budgetId)) return;
