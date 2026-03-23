@@ -1,9 +1,9 @@
 {
-  "name": "BudgetFlow Shared",
-  "short_name": "BudgetFlow",
-  "start_url": "./index.html",
+  "name": "BudgetFlow",
+  "short_name": "Budget",
+  "start_url": ".",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
-  "description": "Shared weekly budget with live cloud sync."
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "icons": []
 }
