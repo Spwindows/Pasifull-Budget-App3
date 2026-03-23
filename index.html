@@ -3,152 +3,137 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BudgetFlow</title>
-<link rel="manifest" href="manifest.json">
+<title>BudgetFlow Shared</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#020617;
-  color:#fff;
+body{margin:0;font-family:Arial;background:#020617;color:#fff}
+.app{max-width:600px;margin:auto;padding:15px}
+
+.card{
+  background:#111827;
+  border-radius:20px;
+  padding:15px;
+  margin-bottom:12px;
 }
-.container{padding:20px;max-width:500px;margin:auto}
-.card{background:#111827;padding:15px;border-radius:12px;margin-bottom:10px}
-button{padding:12px;border:none;border-radius:10px;margin-top:10px;width:100%}
-.primary{background:#38bdf8}
-.success{background:#22c55e}
-.warn{background:#f59e0b}
-.hidden{display:none}
+
+.big{font-size:36px;font-weight:bold}
+.value{font-size:20px}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+button{
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  font-weight:bold;
+  width:100%;
+}
+
+.green{background:#22c55e}
+.orange{background:#f59e0b}
+.blue{background:#38bdf8}
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="app">
 
-<h1>BudgetFlow</h1>
-
-<div id="setupBox" class="card hidden">
-  <h3>Choose Mode</h3>
-  <button id="soloBtn" class="primary">Solo Free</button>
-  <button id="couplesBtn" class="success">Couples (7 day trial)</button>
-</div>
-
-<div id="upgradeBox" class="card hidden">
-  <h3>Upgrade Required</h3>
-  <p>Trial ended</p>
-  <button id="upgradeBtn" class="warn">Unlock Couples ($9.99/year)</button>
+<div class="card">
+<h2>BudgetFlow Shared</h2>
+<p id="syncStatus">Connecting...</p>
 </div>
 
 <div class="card">
-  <h3 id="modeText">Loading...</h3>
+<div>Available</div>
+<div id="available" class="big">$0</div>
+
+<div class="grid">
+<div>Spent: <span id="spent">$0</span></div>
+<div>Bills: <span id="bills">$0</span></div>
+</div>
 </div>
 
 <div class="card">
-  <input id="income" placeholder="Income">
-  <input id="bills" placeholder="Bills">
-  <input id="spent" placeholder="Spent">
+<input id="income" placeholder="Income"><br><br>
+<input id="billsInput" placeholder="Bills"><br><br>
+<input id="spendInput" placeholder="Add Spend"><br><br>
 
-  <button id="calcBtn" class="primary">Calculate</button>
-
-  <h2 id="result">$0</h2>
+<button class="blue" onclick="addSpend()">Add Spend</button>
+<button class="green" onclick="save()">Save</button>
+<button class="orange" onclick="reset()">Reset</button>
 </div>
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 
-const TRIAL_DAYS = 7;
+const SUPABASE_URL = "https://smtgoefvimzevawzpodn.supabase.co";
+const SUPABASE_KEY = "sb_publishable_U07TGXYwm82AnjJQ2CuPog_2CDn9iqO";
+const TABLE = "shared_budgets";
 
-function getMode(){return localStorage.getItem("mode")}
-function setMode(m){localStorage.setItem("mode",m)}
+const urlParams = new URLSearchParams(window.location.search);
+const budgetId = urlParams.get("budget") || "sean-budget";
 
-function getTrialStart(){
-  let t = localStorage.getItem("trialStart");
-  if(!t){
-    t = Date.now();
-    localStorage.setItem("trialStart",t);
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let state = {
+  income:0,
+  bills:0,
+  spent:0
+};
+
+function calc(){
+  const total = state.income - state.bills - state.spent;
+  document.getElementById("available").innerText = "$" + total.toFixed(2);
+  document.getElementById("spent").innerText = "$" + state.spent;
+  document.getElementById("bills").innerText = "$" + state.bills;
+}
+
+function addSpend(){
+  const val = parseFloat(document.getElementById("spendInput").value) || 0;
+  state.spent += val;
+  document.getElementById("spendInput").value = "";
+  save();
+}
+
+function save(){
+  state.income = parseFloat(document.getElementById("income").value) || state.income;
+  state.bills = parseFloat(document.getElementById("billsInput").value) || state.bills;
+
+  calc();
+
+  supabase.from(TABLE).upsert({
+    id: budgetId,
+    payload: state
+  });
+
+  document.getElementById("syncStatus").innerText = "Saved (syncing)";
+}
+
+function reset(){
+  state = {income:0,bills:0,spent:0};
+  save();
+}
+
+async function load(){
+  const res = await supabase.from(TABLE).select("*").eq("id", budgetId).single();
+
+  if(res.data){
+    state = res.data.payload;
+    document.getElementById("income").value = state.income;
+    document.getElementById("billsInput").value = state.bills;
+    calc();
+    document.getElementById("syncStatus").innerText = "Connected";
+  } else {
+    document.getElementById("syncStatus").innerText = "New shared budget created";
   }
-  return Number(t);
 }
 
-function trialDaysUsed(){
-  return Math.floor((Date.now()-getTrialStart())/86400000);
-}
+setInterval(load, 3000);
 
-function trialActive(){
-  return trialDaysUsed() < TRIAL_DAYS;
-}
-
-function isPremium(){
-  return localStorage.getItem("premium")==="true";
-}
-
-function setPremium(v){
-  localStorage.setItem("premium",v?"true":"false");
-}
-
-function updateUI(){
-  const mode = getMode();
-
-  if(!mode){
-    document.getElementById("setupBox").classList.remove("hidden");
-    return;
-  }
-
-  document.getElementById("setupBox").classList.add("hidden");
-
-  if(mode==="solo"){
-    document.getElementById("modeText").innerText="Solo Free Mode";
-    return;
-  }
-
-  if(mode==="couples"){
-    if(isPremium()){
-      document.getElementById("modeText").innerText="Couples Premium";
-      return;
-    }
-
-    if(trialActive()){
-      document.getElementById("modeText").innerText=
-        "Couples Trial ("+(TRIAL_DAYS-trialDaysUsed())+" days left)";
-      return;
-    }
-
-    document.getElementById("modeText").innerText="Trial Ended";
-    document.getElementById("upgradeBox").classList.remove("hidden");
-  }
-}
-
-document.getElementById("soloBtn").onclick=()=>{
-  setMode("solo");
-  updateUI();
-}
-
-document.getElementById("couplesBtn").onclick=()=>{
-  setMode("couples");
-  getTrialStart();
-  updateUI();
-}
-
-document.getElementById("upgradeBtn").onclick=()=>{
-  setPremium(true);
-  document.getElementById("upgradeBox").classList.add("hidden");
-  updateUI();
-}
-
-document.getElementById("calcBtn").onclick=()=>{
-  let income = parseFloat(document.getElementById("income").value)||0;
-  let bills = parseFloat(document.getElementById("bills").value)||0;
-  let spent = parseFloat(document.getElementById("spent").value)||0;
-
-  let result = income - bills - spent;
-
-  document.getElementById("result").innerText="$"+result.toFixed(2);
-}
-
-updateUI();
+load();
 
 </script>
 
