@@ -34,6 +34,7 @@
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .stat{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:18px;padding:14px}
     h2{margin:0 0 10px;font-size:18px}
+    h3{margin:0 0 8px;font-size:18px}
     input,select,button{width:100%;border:none;outline:none;border-radius:14px;padding:12px 14px;font-size:16px}
     input,select{background:#0f172a;color:#fff;border:1px solid var(--line)}
     button{background:var(--accent);color:#fff;font-weight:700}
@@ -55,10 +56,14 @@
     .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.08);color:#cbd5e1;font-size:12px}
     .hidden{display:none!important}
     .mono{font-family:monospace}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999}
+    .modal{background:#111827;border:1px solid var(--line);border-radius:18px;padding:20px;max-width:420px;width:100%}
+    .codebox{background:#0f172a;border:1px solid var(--line);border-radius:12px;padding:12px;color:#fff;word-break:break-all}
     @media (max-width:420px){.big{font-size:34px}.value{font-size:22px}}
   </style>
 </head>
 <body>
+
 <div class="app">
   <section id="page-home">
     <div class="hero">
@@ -77,24 +82,12 @@
       <div class="label">Available now</div>
       <div id="availableNow" class="big">$0.00</div>
       <div class="grid2" style="margin-top:12px">
-        <div class="stat">
-          <div class="label">Safe today</div>
-          <div id="safeToday" class="value">$0.00</div>
-        </div>
-        <div class="stat">
-          <div class="label">Next pay</div>
-          <div id="daysToPay" class="value">—</div>
-        </div>
+        <div class="stat"><div class="label">Safe today</div><div id="safeToday" class="value">$0.00</div></div>
+        <div class="stat"><div class="label">Next pay</div><div id="daysToPay" class="value">—</div></div>
       </div>
       <div class="grid2" style="margin-top:10px">
-        <div class="stat">
-          <div class="label">Spent this week</div>
-          <div id="weekSpent" class="value">$0.00</div>
-        </div>
-        <div class="stat">
-          <div class="label">Weekly bills</div>
-          <div id="weeklyBills" class="value">$0.00</div>
-        </div>
+        <div class="stat"><div class="label">Spent this week</div><div id="weekSpent" class="value">$0.00</div></div>
+        <div class="stat"><div class="label">Weekly bills</div><div id="weeklyBills" class="value">$0.00</div></div>
       </div>
       <div class="row" style="margin-top:12px">
         <button id="goSpendsBtn" class="success">Add Spend</button>
@@ -116,63 +109,26 @@
     <div class="card">
       <h2>Add Spend</h2>
       <div class="row">
-        <div>
-          <div class="label">Item</div>
-          <input id="spendName" type="text" placeholder="e.g. Groceries">
-        </div>
-        <div>
-          <div class="label">Amount</div>
-          <input id="spendAmount" type="number" min="0" placeholder="0">
-        </div>
+        <div><div class="label">Item</div><input id="spendName" type="text" placeholder="e.g. Groceries"></div>
+        <div><div class="label">Amount</div><input id="spendAmount" type="number" min="0" placeholder="0"></div>
       </div>
       <div class="row" style="margin-top:10px">
-        <div>
-          <div class="label">Category</div>
-          <select id="spendCategory">
-            <option>General</option>
-            <option>Groceries</option>
-            <option>Fuel</option>
-            <option>Eating Out</option>
-            <option>Kids</option>
-            <option>Shopping</option>
-            <option>Medical</option>
-            <option>Entertainment</option>
-          </select>
-        </div>
-        <div>
-          <div class="label">Who</div>
-          <select id="spendPerson">
-            <option>Joint</option>
-            <option>Sean</option>
-            <option>Wife</option>
-          </select>
-        </div>
+        <div><div class="label">Category</div><select id="spendCategory"><option>General</option><option>Groceries</option><option>Fuel</option><option>Eating Out</option><option>Kids</option><option>Shopping</option><option>Medical</option><option>Entertainment</option></select></div>
+        <div><div class="label">Who</div><select id="spendPerson"><option>Joint</option><option>Sean</option><option>Wife</option></select></div>
       </div>
-      <div style="margin-top:10px">
-        <div class="label">Date</div>
-        <input id="spendDate" type="date">
-      </div>
-      <div class="row" style="margin-top:10px">
-        <button id="saveSpendBtn">Save Spend</button>
-        <button id="cancelEditBtn" class="secondary hidden">Cancel</button>
-      </div>
+      <div style="margin-top:10px"><div class="label">Date</div><input id="spendDate" type="date"></div>
+      <div class="row" style="margin-top:10px"><button id="saveSpendBtn">Save Spend</button><button id="cancelEditBtn" class="secondary hidden">Cancel</button></div>
     </div>
 
     <div class="card">
-      <div class="between">
-        <h2>Recent Spends</h2>
-        <span id="spendCount" class="pill">0 items</span>
-      </div>
+      <div class="between"><h2>Recent Spends</h2><span id="spendCount" class="pill">0 items</span></div>
       <div id="spendList"></div>
     </div>
   </section>
 
   <section id="page-bills" class="hidden">
     <div class="card">
-      <div class="between">
-        <h2>Bills</h2>
-        <button id="addBillBtn" style="width:auto">Add Bill</button>
-      </div>
+      <div class="between"><h2>Bills</h2><button id="addBillBtn" style="width:auto">Add Bill</button></div>
       <div id="billList"></div>
     </div>
   </section>
@@ -184,76 +140,42 @@
         <div class="stat"><div class="label">Spent this year</div><div id="yearSpent" class="value">$0.00</div></div>
         <div class="stat"><div class="label">Saved this year</div><div id="yearSaved" class="value">$0.00</div></div>
       </div>
-      <div style="margin-top:12px">
-        <button id="exportBtn" class="secondary">Export CSV</button>
-      </div>
+      <div style="margin-top:12px"><button id="exportBtn" class="secondary">Export CSV</button></div>
     </div>
-    <div class="card">
-      <h2>Weekly History</h2>
-      <div id="historyList"></div>
-    </div>
+    <div class="card"><h2>Weekly History</h2><div id="historyList"></div></div>
   </section>
 
   <section id="page-settings" class="hidden">
     <div class="card">
       <h2>Settings</h2>
-      <div>
-        <div class="label">App name</div>
-        <input id="appName" type="text" placeholder="App name">
-      </div>
-      <div style="margin-top:10px">
-        <div class="label">Logo</div>
-        <label for="logoUpload" class="pill" style="cursor:pointer">Upload logo</label>
-        <input id="logoUpload" class="hidden" type="file" accept="image/*">
+      <div><div class="label">App name</div><input id="appName" type="text" placeholder="App name"></div>
+      <div style="margin-top:10px"><div class="label">Logo</div><label for="logoUpload" class="pill" style="cursor:pointer">Upload logo</label><input id="logoUpload" class="hidden" type="file" accept="image/*"></div>
+      <div class="row" style="margin-top:10px">
+        <div><div class="label">Balance brought forward</div><input id="carryBalance" type="number" min="0" placeholder="0"></div>
+        <div><div class="label">Weekly income</div><input id="income" type="number" min="0" placeholder="0"></div>
       </div>
       <div class="row" style="margin-top:10px">
-        <div>
-          <div class="label">Balance brought forward</div>
-          <input id="carryBalance" type="number" min="0" placeholder="0">
-        </div>
-        <div>
-          <div class="label">Weekly income</div>
-          <input id="income" type="number" min="0" placeholder="0">
-        </div>
+        <div><div class="label">Expected weekly income</div><input id="expectedIncome" type="number" min="0" placeholder="0"></div>
+        <div><div class="label">Current bank balance</div><input id="currentBalance" type="number" min="0" placeholder="Optional"></div>
       </div>
       <div class="row" style="margin-top:10px">
-        <div>
-          <div class="label">Expected weekly income</div>
-          <input id="expectedIncome" type="number" min="0" placeholder="0">
-        </div>
-        <div>
-          <div class="label">Current bank balance</div>
-          <input id="currentBalance" type="number" min="0" placeholder="Optional">
-        </div>
+        <div><div class="label">Savings target</div><input id="savingsTarget" type="number" min="0" placeholder="0"></div>
+        <div><div class="label">Fun target</div><input id="funTarget" type="number" min="0" placeholder="0"></div>
       </div>
       <div class="row" style="margin-top:10px">
-        <div>
-          <div class="label">Savings target</div>
-          <input id="savingsTarget" type="number" min="0" placeholder="0">
-        </div>
-        <div>
-          <div class="label">Fun target</div>
-          <input id="funTarget" type="number" min="0" placeholder="0">
-        </div>
+        <div><div class="label">Last pay date</div><input id="lastPay" type="date"></div>
+        <div><div class="label">Next pay date</div><input id="nextPay" type="date"></div>
       </div>
-      <div class="row" style="margin-top:10px">
-        <div>
-          <div class="label">Last pay date</div>
-          <input id="lastPay" type="date">
-        </div>
-        <div>
-          <div class="label">Next pay date</div>
-          <input id="nextPay" type="date">
-        </div>
-      </div>
-      <div style="margin-top:10px">
-        <div class="label">Shared budget ID</div>
-        <input id="budgetIdInput" class="mono" type="text" readonly>
-      </div>
+      <div style="margin-top:10px"><div class="label">Shared budget ID</div><input id="budgetIdInput" class="mono" type="text" readonly></div>
+
       <div class="row" style="margin-top:10px">
         <button id="copyLinkBtn" class="secondary">Copy Shared Link</button>
+        <button id="createCoupleBtn" class="warn">Create New Couple</button>
+      </div>
+      <div class="row" style="margin-top:10px">
         <button id="syncNowBtn" class="success">Sync Now</button>
       </div>
+
       <div class="row" style="margin-top:12px">
         <button id="installBtn" class="success hidden">Install App</button>
         <button id="resetBtn" class="danger">Reset All</button>
@@ -271,6 +193,19 @@
   <button class="tab" data-page="history">History</button>
   <button class="tab" data-page="settings">Settings</button>
 </nav>
+
+<div id="coupleModal" class="overlay hidden">
+  <div class="modal">
+    <h3>New Couple Created</h3>
+    <p class="small">Send this link to both phones:</p>
+    <div id="newCoupleLink" class="codebox"></div>
+    <div class="row" style="margin-top:15px">
+      <button id="copyNewLinkBtn" class="success">Copy Link</button>
+      <button id="openNewLinkBtn" class="warn">Open</button>
+    </div>
+    <button id="closeModalBtn" class="secondary" style="margin-top:10px">Close</button>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -299,17 +234,7 @@ const defaultState = {
 };
 
 const params = new URLSearchParams(location.search);
-
-let budgetId = params.get("budget");
-
-// If no budget ID, create one
-if (!budgetId) {
-  budgetId = "bf-" + Math.random().toString(36).substring(2, 10);
-
-  // update URL WITHOUT reload
-  const newUrl = location.origin + location.pathname + "?budget=" + budgetId;
-  window.history.replaceState({}, "", newUrl);
-}
+const budgetId = params.get("budget") || "sean-budget";
 let state = loadLocalState();
 let editingSpendId = null;
 let deferredPrompt = null;
@@ -321,10 +246,67 @@ const $ = id => document.getElementById(id);
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function clone(v){ return JSON.parse(JSON.stringify(v)); }
+function num(v){ const n = parseFloat(v); return Number.isFinite(n) ? n : 0; }
+function todayISO(){ return new Date().toISOString().split("T")[0]; }
+function formatDate(d){ return d.toISOString().split("T")[0]; }
+function esc(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;"); }
+function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+function money(n){ return new Intl.NumberFormat("en-AU",{style:"currency",currency:"AUD",maximumFractionDigits:2}).format(Number.isFinite(n) ? n : 0); }
+
+function normaliseState(raw){
+  const merged = {...clone(defaultState), ...(raw || {})};
+
+  merged.appName = merged.appName || "BudgetFlow Shared";
+  merged.logo = merged.logo || "";
+  merged.carryBalance = String(num(merged.carryBalance));
+  merged.income = String(num(merged.income));
+  merged.expectedIncome = String(num(merged.expectedIncome));
+  merged.currentBalance = merged.currentBalance === "" ? "" : String(num(merged.currentBalance));
+  merged.savingsTarget = String(num(merged.savingsTarget));
+  merged.funTarget = String(num(merged.funTarget));
+  merged.lastPay = merged.lastPay || "";
+  merged.nextPay = merged.nextPay || "";
+
+  merged.bills = Array.isArray(merged.bills) ? merged.bills.map((b, i) => ({
+    id: b?.id || Date.now()+i,
+    name: b?.name || "",
+    amount: String(num(b?.amount)),
+    frequency: ["weekly","fortnightly","monthly","quarterly","yearly"].includes(b?.frequency) ? b.frequency : "weekly"
+  })) : clone(defaultState.bills);
+
+  merged.spends = Array.isArray(merged.spends) ? merged.spends.filter(Boolean).map((s, i) => {
+    if(typeof s === "number"){
+      return {id: Date.now()+i, name:"Spend", amount:String(num(s)), category:"General", person:"Joint", date:todayISO()};
+    }
+    return {
+      id: s?.id || Date.now()+i,
+      name: s?.name || "Spend",
+      amount: String(num(s?.amount)),
+      category: s?.category || "General",
+      person: s?.person || "Joint",
+      date: s?.date || todayISO()
+    };
+  }) : [];
+
+  merged.history = Array.isArray(merged.history) ? merged.history.map((h, i) => ({
+    id: h?.id || Date.now()+i,
+    label: h?.label || "",
+    weekStart: h?.weekStart || "",
+    weekEnd: h?.weekEnd || "",
+    carry: String(num(h?.carry)),
+    income: String(num(h?.income)),
+    savings: String(num(h?.savings)),
+    spent: String(num(h?.spent)),
+    left: String(num(h?.left))
+  })) : [];
+
+  return merged;
+}
+
 function loadLocalState(){
   try{
     const raw = localStorage.getItem("budgetflow-local-" + budgetId);
-    return raw ? {...clone(defaultState), ...JSON.parse(raw)} : clone(defaultState);
+    return raw ? normaliseState(JSON.parse(raw)) : clone(defaultState);
   }catch{
     return clone(defaultState);
   }
@@ -332,13 +314,10 @@ function loadLocalState(){
 function saveLocalState(){
   localStorage.setItem("budgetflow-local-" + budgetId, JSON.stringify(state));
 }
-function setSyncStatus(t){ $("syncBox").textContent = t; }
-function num(v){ const n = parseFloat(v); return Number.isFinite(n) ? n : 0; }
-function money(n){ return new Intl.NumberFormat("en-AU",{style:"currency",currency:"AUD",maximumFractionDigits:2}).format(Number.isFinite(n) ? n : 0); }
-function esc(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;"); }
-function todayISO(){ return new Date().toISOString().split("T")[0]; }
-function formatDate(d){ return d.toISOString().split("T")[0]; }
-function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+function setSyncStatus(t){
+  $("syncBox").textContent = t;
+}
+
 function daysUntil(dateStr){
   if(!dateStr) return null;
   const now = new Date();
@@ -349,20 +328,20 @@ function daysUntil(dateStr){
 function deriveNextPay(){
   if(!state.lastPay) return;
   const d = new Date(state.lastPay + "T00:00:00");
-  d.setDate(d.getDate() + 7);
+  d.setDate(d.getDate()+7);
   state.nextPay = formatDate(d);
 }
 function deriveLastPay(){
   if(!state.nextPay) return;
   const d = new Date(state.nextPay + "T00:00:00");
-  d.setDate(d.getDate() - 7);
+  d.setDate(d.getDate()-7);
   state.lastPay = formatDate(d);
 }
 function weeklyBillsTotal(){
-  return state.bills.reduce((sum,b) => sum + num(b.amount) * (frequencies[b.frequency] || 0), 0);
+  return state.bills.reduce((sum,b)=> sum + num(b.amount)*(frequencies[b.frequency]||0), 0);
 }
 function spendTotal(){
-  return state.spends.reduce((sum,s) => sum + num(s.amount), 0);
+  return state.spends.reduce((sum,s)=> sum + num(s.amount), 0);
 }
 function summary(){
   const carry = num(state.carryBalance);
@@ -384,8 +363,8 @@ function yearTotals(){
   const hist = state.history.filter(h => new Date((h.weekStart||todayISO()) + "T00:00:00").getFullYear() === year);
   const current = summary();
   return {
-    spent: hist.reduce((s,h)=>s + num(h.spent),0) + current.spent,
-    saved: hist.reduce((s,h)=>s + num(h.savings),0) + current.savings
+    spent: hist.reduce((s,h)=> s + num(h.spent),0) + current.spent,
+    saved: hist.reduce((s,h)=> s + num(h.savings),0) + current.savings
   };
 }
 function statusText(s){
@@ -427,8 +406,7 @@ function renderSpends(){
   state.spends.slice().reverse().forEach(sp => {
     const div = document.createElement("div");
     div.className = "item";
-    div.innerHTML =
-      '<div class="between"><div><div style="font-weight:700">' + esc(sp.name || "Spend") + '</div><div class="small">' + esc(sp.category || "General") + ' • ' + esc(sp.person || "Joint") + ' • ' + esc(sp.date || "") + '</div></div><div style="font-weight:700">' + money(num(sp.amount)) + '</div></div><div class="row" style="margin-top:10px"><button class="secondary edit-btn">Edit</button><button class="danger del-btn">Delete</button></div>';
+    div.innerHTML = '<div class="between"><div><div style="font-weight:700">' + esc(sp.name || "Spend") + '</div><div class="small">' + esc(sp.category || "General") + ' • ' + esc(sp.person || "Joint") + ' • ' + esc(sp.date || "") + '</div></div><div style="font-weight:700">' + money(num(sp.amount)) + '</div></div><div class="row" style="margin-top:10px"><button class="secondary edit-btn">Edit</button><button class="danger del-btn">Delete</button></div>';
     div.querySelector(".edit-btn").addEventListener("click", () => loadSpend(sp.id));
     div.querySelector(".del-btn").addEventListener("click", () => {
       state.spends = state.spends.filter(x => x.id !== sp.id);
@@ -444,18 +422,15 @@ function renderBills(){
   state.bills.forEach((bill, idx) => {
     const div = document.createElement("div");
     div.className = "item";
-    div.innerHTML =
-      '<div class="row"><div><div class="label">Bill name</div><input data-field="name" type="text" value="' + esc(bill.name) + '" placeholder="Bill name"></div><div><div class="label">Amount</div><input data-field="amount" type="number" value="' + esc(bill.amount) + '" placeholder="0"></div></div><div class="row" style="margin-top:10px"><div><div class="label">Frequency</div><select data-field="frequency">' +
-      Object.keys(frequencies).map(f => '<option value="' + f + '" ' + (bill.frequency===f?'selected':'') + '>' + cap(f) + '</option>').join('') +
-      '</select></div><div style="max-width:120px"><div class="label">&nbsp;</div><button class="danger del-bill">Delete</button></div></div><div class="small" style="margin-top:8px">Weekly equivalent: ' + money(num(bill.amount) * (frequencies[bill.frequency] || 0)) + '</div>';
+    div.innerHTML = '<div class="row"><div><div class="label">Bill name</div><input data-field="name" type="text" value="' + esc(bill.name) + '" placeholder="Bill name"></div><div><div class="label">Amount</div><input data-field="amount" type="number" value="' + esc(bill.amount) + '" placeholder="0"></div></div><div class="row" style="margin-top:10px"><div><div class="label">Frequency</div><select data-field="frequency">' + Object.keys(frequencies).map(f => '<option value="' + f + '" ' + (bill.frequency===f?'selected':'') + '>' + cap(f) + '</option>').join('') + '</select></div><div style="max-width:120px"><div class="label">&nbsp;</div><button class="danger del-bill">Delete</button></div></div><div class="small" style="margin-top:8px">Weekly equivalent: ' + money(num(bill.amount)*(frequencies[bill.frequency]||0)) + '</div>';
     div.querySelectorAll("[data-field]").forEach(el => {
-      const handler = (e) => {
+      const handler = e => {
         state.bills[idx][e.target.dataset.field] = e.target.value;
         stateChanged();
-        if(e.target.tagName === "SELECT") renderBills();
+        if(e.target.tagName==="SELECT") renderBills();
         renderTop();
       };
-      if(el.tagName === "SELECT") el.addEventListener("change", handler);
+      if(el.tagName==="SELECT") el.addEventListener("change", handler);
       else el.addEventListener("input", handler);
     });
     div.querySelector(".del-bill").addEventListener("click", () => {
@@ -479,19 +454,18 @@ function renderHistory(){
   state.history.slice().reverse().forEach(h => {
     const div = document.createElement("div");
     div.className = "item";
-    div.innerHTML =
-      '<div style="font-weight:700">' + esc(h.label || h.weekStart) + '</div><div class="small" style="margin-top:6px">B/F ' + money(num(h.carry)) + ' • Income ' + money(num(h.income)) + ' • Spent ' + money(num(h.spent)) + ' • Saved ' + money(num(h.savings)) + '</div><div class="small" style="margin-top:4px">Left: ' + money(num(h.left)) + '</div>';
+    div.innerHTML = '<div style="font-weight:700">' + esc(h.label || h.weekStart) + '</div><div class="small" style="margin-top:6px">B/F ' + money(num(h.carry)) + ' • Income ' + money(num(h.income)) + ' • Spent ' + money(num(h.spent)) + ' • Saved ' + money(num(h.savings)) + '</div><div class="small" style="margin-top:4px">Left: ' + money(num(h.left)) + '</div>';
     holder.appendChild(div);
   });
 }
 function renderSettings(){
   $("appName").value = state.appName;
-  $("carryBalance").value = state.carryBalance;
-  $("income").value = state.income;
-  $("expectedIncome").value = state.expectedIncome;
-  $("currentBalance").value = state.currentBalance;
-  $("savingsTarget").value = state.savingsTarget;
-  $("funTarget").value = state.funTarget;
+  $("carryBalance").value = state.carryBalance === "0" ? "" : state.carryBalance;
+  $("income").value = state.income === "0" ? "" : state.income;
+  $("expectedIncome").value = state.expectedIncome === "0" ? "" : state.expectedIncome;
+  $("currentBalance").value = state.currentBalance === "0" ? "" : state.currentBalance;
+  $("savingsTarget").value = state.savingsTarget === "0" ? "" : state.savingsTarget;
+  $("funTarget").value = state.funTarget === "0" ? "" : state.funTarget;
   $("lastPay").value = state.lastPay;
   $("nextPay").value = state.nextPay;
   $("budgetIdInput").value = budgetId;
@@ -520,7 +494,7 @@ function clearSpendForm(){
   $("cancelEditBtn").classList.add("hidden");
 }
 function loadSpend(id){
-  const sp = state.spends.find(x => x.id === id);
+  const sp = state.spends.find(x => x.id===id);
   if(!sp) return;
   editingSpendId = id;
   $("spendName").value = sp.name || "";
@@ -534,14 +508,14 @@ function loadSpend(id){
 function saveSpend(){
   const spend = {
     id: editingSpendId || Date.now(),
-    name: $("spendName").value.trim() || "Spend",
-    amount: $("spendAmount").value,
-    category: $("spendCategory").value,
-    person: $("spendPerson").value,
-    date: $("spendDate").value || todayISO()
+    name:$("spendName").value.trim()||"Spend",
+    amount:String(num($("spendAmount").value)),
+    category:$("spendCategory").value,
+    person:$("spendPerson").value,
+    date:$("spendDate").value||todayISO()
   };
   if(!num(spend.amount)) return;
-  if(editingSpendId) state.spends = state.spends.map(x => x.id === editingSpendId ? spend : x);
+  if(editingSpendId) state.spends = state.spends.map(x => x.id===editingSpendId ? spend : x);
   else state.spends.push(spend);
   stateChanged();
   clearSpendForm();
@@ -550,44 +524,54 @@ function saveSpend(){
 function startNewWeek(){
   const s = summary();
   state.history.push({
-    id: Date.now(),
-    label: (state.lastPay || todayISO()) + " to " + (state.nextPay || "—"),
-    weekStart: state.lastPay || todayISO(),
-    weekEnd: state.nextPay || todayISO(),
-    carry: state.carryBalance,
-    income: state.income,
-    savings: state.savingsTarget,
-    spent: s.spent,
-    left: s.liveAvailable
+    id:Date.now(),
+    label:(state.lastPay||todayISO())+" to "+(state.nextPay||"—"),
+    weekStart:state.lastPay||todayISO(),
+    weekEnd:state.nextPay||todayISO(),
+    carry:String(num(state.carryBalance)),
+    income:String(num(state.income)),
+    savings:String(num(state.savingsTarget)),
+    spent:String(num(s.spent)),
+    left:String(num(s.liveAvailable))
   });
-  state.carryBalance = String(Math.max(s.liveAvailable, 0));
+  state.carryBalance = String(Math.max(s.liveAvailable,0));
   state.currentBalance = "";
   state.spends = [];
   state.income = state.expectedIncome || state.income;
   if(state.nextPay){
     state.lastPay = state.nextPay;
-    const d = new Date(state.nextPay + "T00:00:00");
-    d.setDate(d.getDate() + 7);
+    const d = new Date(state.nextPay+"T00:00:00");
+    d.setDate(d.getDate()+7);
     state.nextPay = formatDate(d);
   }
   stateChanged();
   renderAll();
 }
 function exportCsv(){
-  const rows = [["Week Start","Week End","Carry Forward","Income","Saved","Spent","Left"]];
-  state.history.forEach(h => rows.push([h.weekStart, h.weekEnd, h.carry, h.income, h.savings, h.spent, h.left]));
-  const csv = rows.map(r => r.map(c => '"' + String(c ?? "").replaceAll('"','""') + '"').join(",")).join("\\n");
-  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const rows=[["Week Start","Week End","Carry Forward","Income","Saved","Spent","Left"]];
+  state.history.forEach(h => rows.push([h.weekStart,h.weekEnd,h.carry,h.income,h.savings,h.spent,h.left]));
+  const csv = rows.map(r => r.map(c => '"' + String(c??"").replaceAll('"','""') + '"').join(",")).join("\\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"}), url = URL.createObjectURL(blob), a = document.createElement("a");
   a.href = url;
   a.download = "budgetflow-history.csv";
   a.click();
   URL.revokeObjectURL(url);
 }
 function copySharedLink(){
-  const url = location.origin + location.pathname + "?budget=" + encodeURIComponent(budgetId);
-  navigator.clipboard.writeText(url).then(() => setSyncStatus("Shared link copied."));
+  navigator.clipboard.writeText(window.location.href).then(() => setSyncStatus("Shared link copied."));
+}
+
+function generateBudgetId(){
+  return "bf-" + Math.random().toString(36).substring(2, 10);
+}
+function createNewCouple(){
+  const newId = generateBudgetId();
+  const newUrl = location.origin + location.pathname + "?budget=" + newId;
+  $("newCoupleLink").textContent = newUrl;
+  $("coupleModal").classList.remove("hidden");
+}
+function closeModal(){
+  $("coupleModal").classList.add("hidden");
 }
 
 async function ensureRemoteRow(){
@@ -599,7 +583,7 @@ async function ensureRemoteRow(){
   }
   if(res.data){
     latestServerTimestamp = res.data.updated_at || res.data.created_at || null;
-    state = {...clone(defaultState), ...res.data.payload};
+    state = normaliseState(res.data.payload);
     saveLocalState();
     renderAll();
     setSyncStatus("Connected. Live sync active.");
@@ -631,6 +615,7 @@ function schedulePush(){
   syncTimer = setTimeout(pushRemote, 500);
 }
 function stateChanged(){
+  state = normaliseState(state);
   saveLocalState();
   schedulePush();
 }
@@ -641,7 +626,7 @@ async function pullRemote(){
   if(remoteTs && latestServerTimestamp && new Date(remoteTs) <= new Date(latestServerTimestamp)) return;
   latestServerTimestamp = remoteTs;
   isApplyingRemote = true;
-  state = {...clone(defaultState), ...res.data.payload};
+  state = normaliseState(res.data.payload);
   saveLocalState();
   renderAll();
   isApplyingRemote = false;
@@ -664,7 +649,17 @@ $("addBillBtn").addEventListener("click", () => {
 });
 $("exportBtn").addEventListener("click", exportCsv);
 $("copyLinkBtn").addEventListener("click", copySharedLink);
+$("createCoupleBtn").addEventListener("click", createNewCouple);
 $("syncNowBtn").addEventListener("click", pushRemote);
+
+$("copyNewLinkBtn").addEventListener("click", () => {
+  navigator.clipboard.writeText($("newCoupleLink").textContent);
+  setSyncStatus("New couple link copied.");
+});
+$("openNewLinkBtn").addEventListener("click", () => {
+  window.location.href = $("newCoupleLink").textContent;
+});
+$("closeModalBtn").addEventListener("click", closeModal);
 
 $("appName").addEventListener("input", e => { state.appName = e.target.value; stateChanged(); renderTop(); });
 $("carryBalance").addEventListener("input", e => { state.carryBalance = e.target.value; stateChanged(); renderTop(); renderHistory(); });
@@ -682,8 +677,11 @@ $("logoUpload").addEventListener("change", e => {
   const reader = new FileReader();
   reader.onload = () => {
     state.logo = reader.result;
-    stateChanged();
+    saveLocalState();
     renderLogo();
+    renderAll();
+    setSyncStatus("Logo saved.");
+    pushRemote();
   };
   reader.readAsDataURL(file);
 });
@@ -717,6 +715,7 @@ if("serviceWorker" in navigator){
 if(!state.nextPay && state.lastPay) deriveNextPay();
 if(!state.lastPay && state.nextPay) deriveLastPay();
 $("spendDate").value = todayISO();
+state = normaliseState(state);
 renderAll();
 ensureRemoteRow();
 setInterval(pullRemote, 4000);
