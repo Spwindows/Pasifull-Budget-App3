@@ -1,672 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0f172a">
-  <title>BudgetFlow Shared</title>
-  <link rel="manifest" href="manifest.json">
-  <style>
-    :root{
-      --bg:#020617;--bg2:#0f172a;--card:#111827;--line:rgba(255,255,255,.08);
-      --text:#f8fafc;--muted:#94a3b8;--accent:#38bdf8;--success:#22c55e;
-      --warn:#f59e0b;--danger:#ef4444;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--text)}
-    .app{max-width:560px;margin:0 auto;min-height:100vh;padding:14px 14px 94px}
-    .hero,.card{background:rgba(17,24,39,.94);border:1px solid var(--line);border-radius:22px;margin-bottom:12px}
-    .hero{padding:18px}
-    .logoRow{display:flex;gap:12px;align-items:center}
-    .logo{width:54px;height:54px;border-radius:16px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden}
-    .logo img{width:100%;height:100%;object-fit:cover;background:#fff}
-    .title{font-size:24px;font-weight:900}
-    .sub{font-size:13px;color:var(--muted);margin-top:4px}
-    .notice{margin-top:12px;border-radius:16px;padding:12px 14px;font-size:13px}
-    .ok{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.28);color:#bbf7d0}
-    .warnBox{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.28);color:#fde68a}
-    .dangerBox{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.28);color:#fecaca}
-    .sync{background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.28);color:#bae6fd}
-    .card{padding:16px}
-    .label{font-size:12px;color:var(--muted)}
-    .big{font-size:40px;font-weight:900;margin-top:4px}
-    .value{font-size:26px;font-weight:800;margin-top:6px}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .stat{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:18px;padding:14px}
-    h2{margin:0 0 10px;font-size:18px}
-    input,select,button{width:100%;border:none;outline:none;border-radius:14px;padding:12px 14px;font-size:16px}
-    input,select{background:#0f172a;color:#fff;border:1px solid var(--line)}
-    button{background:var(--accent);color:#fff;font-weight:700}
-    button.secondary{background:#334155}
-    button.success{background:var(--success)}
-    button.warn{background:var(--warn)}
-    button.danger{background:var(--danger)}
-    .row{display:flex;gap:8px}
-    .row>*{flex:1}
-    .small{font-size:13px;color:var(--muted)}
-    .item{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:16px;padding:12px;margin-top:10px}
-    .between{display:flex;justify-content:space-between;gap:10px;align-items:center}
-    .summaryRow{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
-    .summaryRow:last-child{border-bottom:none}
-    .tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;width:min(560px,calc(100% - 24px));display:grid;grid-template-columns:repeat(5,1fr);gap:8px;background:rgba(15,23,42,.96);border:1px solid var(--line);border-radius:20px;padding:8px;backdrop-filter:blur(10px)}
-    .tab{background:transparent;color:#cbd5e1;border-radius:14px;padding:10px 6px;font-size:12px}
-    .tab.active{background:rgba(56,189,248,.18);color:#fff}
-    .fab{position:fixed;right:18px;bottom:84px;width:58px;height:58px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:30px;box-shadow:0 12px 24px rgba(0,0,0,.35)}
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.08);color:#cbd5e1;font-size:12px}
-    .hidden{display:none!important}
-    .mono{font-family:monospace}
-    @media (max-width:420px){.big{font-size:34px}.value{font-size:22px}}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BudgetFlow</title>
+<link rel="manifest" href="manifest.json">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#020617;
+  color:#fff;
+}
+.container{padding:20px;max-width:500px;margin:auto}
+.card{background:#111827;padding:15px;border-radius:12px;margin-bottom:10px}
+button{padding:12px;border:none;border-radius:10px;margin-top:10px;width:100%}
+.primary{background:#38bdf8}
+.success{background:#22c55e}
+.warn{background:#f59e0b}
+.hidden{display:none}
+</style>
 </head>
+
 <body>
-<div class="app">
-  <section id="page-home">
-    <div class="hero">
-      <div class="logoRow">
-        <div id="logoBox" class="logo">💸</div>
-        <div>
-          <div class="title" id="heroTitle">BudgetFlow Shared</div>
-          <div class="sub">Shared link version for both phones</div>
-        </div>
-      </div>
-      <div id="statusBox" class="notice ok">You are on track.</div>
-      <div id="syncBox" class="notice sync">Connecting…</div>
-    </div>
 
-    <div class="card">
-      <div class="label">Available now</div>
-      <div id="availableNow" class="big">$0.00</div>
-      <div class="grid2" style="margin-top:12px">
-        <div class="stat"><div class="label">Safe today</div><div id="safeToday" class="value">$0.00</div></div>
-        <div class="stat"><div class="label">Next pay</div><div id="daysToPay" class="value">—</div></div>
-      </div>
-      <div class="grid2" style="margin-top:10px">
-        <div class="stat"><div class="label">Spent this week</div><div id="weekSpent" class="value">$0.00</div></div>
-        <div class="stat"><div class="label">Weekly bills</div><div id="weeklyBills" class="value">$0.00</div></div>
-      </div>
-      <div class="row" style="margin-top:12px">
-        <button id="goSpendsBtn" class="success">Add Spend</button>
-        <button id="startWeekBtn" class="warn">Start New Week</button>
-      </div>
-    </div>
+<div class="container">
 
-    <div class="card">
-      <h2>Quick Summary</h2>
-      <div class="summaryRow"><span>Balance brought forward</span><strong id="sumCarry">$0.00</strong></div>
-      <div class="summaryRow"><span>This week's income</span><strong id="sumIncome">$0.00</strong></div>
-      <div class="summaryRow"><span>Savings target</span><strong id="sumSavings">$0.00</strong></div>
-      <div class="summaryRow"><span>Fun target</span><strong id="sumFun">$0.00</strong></div>
-      <div class="summaryRow"><span>Forecast to payday</span><strong id="sumForecast">$0.00</strong></div>
-    </div>
-  </section>
+<h1>BudgetFlow</h1>
 
-  <section id="page-spends" class="hidden">
-    <div class="card">
-      <h2>Add Spend</h2>
-      <div class="row">
-        <div><div class="label">Item</div><input id="spendName" type="text" placeholder="e.g. Groceries"></div>
-        <div><div class="label">Amount</div><input id="spendAmount" type="number" min="0" placeholder="0"></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div><div class="label">Category</div><select id="spendCategory">
-          <option>General</option><option>Groceries</option><option>Fuel</option><option>Eating Out</option>
-          <option>Kids</option><option>Shopping</option><option>Medical</option><option>Entertainment</option>
-        </select></div>
-        <div><div class="label">Who</div><select id="spendPerson">
-          <option>Joint</option><option>Sean</option><option>Wife</option>
-        </select></div>
-      </div>
-      <div style="margin-top:10px"><div class="label">Date</div><input id="spendDate" type="date"></div>
-      <div class="row" style="margin-top:10px"><button id="saveSpendBtn">Save Spend</button><button id="cancelEditBtn" class="secondary hidden">Cancel</button></div>
-    </div>
-    <div class="card"><div class="between"><h2>Recent Spends</h2><span id="spendCount" class="pill">0 items</span></div><div id="spendList"></div></div>
-  </section>
-
-  <section id="page-bills" class="hidden">
-    <div class="card"><div class="between"><h2>Bills</h2><button id="addBillBtn" style="width:auto">Add Bill</button></div><div id="billList"></div></div>
-  </section>
-
-  <section id="page-history" class="hidden">
-    <div class="card">
-      <h2>Year Totals</h2>
-      <div class="grid2">
-        <div class="stat"><div class="label">Spent this year</div><div id="yearSpent" class="value">$0.00</div></div>
-        <div class="stat"><div class="label">Saved this year</div><div id="yearSaved" class="value">$0.00</div></div>
-      </div>
-      <div style="margin-top:12px"><button id="exportBtn" class="secondary">Export CSV</button></div>
-    </div>
-    <div class="card"><h2>Weekly History</h2><div id="historyList"></div></div>
-  </section>
-
-  <section id="page-settings" class="hidden">
-    <div class="card">
-      <h2>Settings</h2>
-      <div><div class="label">App name</div><input id="appName" type="text" placeholder="App name"></div>
-      <div style="margin-top:10px"><div class="label">Logo</div><label for="logoUpload" class="pill" style="cursor:pointer">Upload logo</label><input id="logoUpload" class="hidden" type="file" accept="image/*"></div>
-      <div class="row" style="margin-top:10px">
-        <div><div class="label">Balance brought forward</div><input id="carryBalance" type="number" min="0" placeholder="0"></div>
-        <div><div class="label">Weekly income</div><input id="income" type="number" min="0" placeholder="0"></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div><div class="label">Expected weekly income</div><input id="expectedIncome" type="number" min="0" placeholder="0"></div>
-        <div><div class="label">Current bank balance</div><input id="currentBalance" type="number" min="0" placeholder="Optional"></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div><div class="label">Savings target</div><input id="savingsTarget" type="number" min="0" placeholder="0"></div>
-        <div><div class="label">Fun target</div><input id="funTarget" type="number" min="0" placeholder="0"></div>
-      </div>
-      <div class="row" style="margin-top:10px">
-        <div><div class="label">Last pay date</div><input id="lastPay" type="date"></div>
-        <div><div class="label">Next pay date</div><input id="nextPay" type="date"></div>
-      </div>
-      <div style="margin-top:10px"><div class="label">Shared budget ID</div><input id="budgetIdInput" class="mono" type="text" readonly></div>
-      <div class="row" style="margin-top:10px"><button id="copyLinkBtn" class="secondary">Copy Shared Link</button><button id="syncNowBtn" class="success">Sync Now</button></div>
-      <div class="row" style="margin-top:12px"><button id="installBtn" class="success hidden">Install App</button><button id="resetBtn" class="danger">Reset All</button></div>
-    </div>
-  </section>
+<div id="setupBox" class="card hidden">
+  <h3>Choose Mode</h3>
+  <button id="soloBtn" class="primary">Solo Free</button>
+  <button id="couplesBtn" class="success">Couples (7 day trial)</button>
 </div>
 
-<button id="fabBtn" class="fab">+</button>
-<nav class="tabs">
-  <button class="tab active" data-page="home">Home</button>
-  <button class="tab" data-page="spends">Spends</button>
-  <button class="tab" data-page="bills">Bills</button>
-  <button class="tab" data-page="history">History</button>
-  <button class="tab" data-page="settings">Settings</button>
-</nav>
+<div id="upgradeBox" class="card hidden">
+  <h3>Upgrade Required</h3>
+  <p>Trial ended</p>
+  <button id="upgradeBtn" class="warn">Unlock Couples ($9.99/year)</button>
+</div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<div class="card">
+  <h3 id="modeText">Loading...</h3>
+</div>
+
+<div class="card">
+  <input id="income" placeholder="Income">
+  <input id="bills" placeholder="Bills">
+  <input id="spent" placeholder="Spent">
+
+  <button id="calcBtn" class="primary">Calculate</button>
+
+  <h2 id="result">$0</h2>
+</div>
+
+</div>
+
 <script>
-const SUPABASE_URL = "https://smtgoefvimzevawzpodn.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_U07TGXYwm82AnjJQ2CuPog_2CDn9iqO";
-const TABLE_NAME = "shared_budgets";
-const frequencies = {weekly:1, fortnightly:1/2, monthly:12/52, quarterly:4/52, yearly:1/52};
 
-const defaultState = {
-  appName:"BudgetFlow Shared",
-  logo:"",
-  carryBalance:"",
-  income:"",
-  expectedIncome:"",
-  currentBalance:"",
-  savingsTarget:"",
-  funTarget:"",
-  lastPay:"",
-  nextPay:"",
-  bills:[
-    {id:1,name:"Rent / Mortgage",amount:"",frequency:"weekly"},
-    {id:2,name:"Electricity",amount:"",frequency:"monthly"}
-  ],
-  spends:[],
-  history:[]
-};
+const TRIAL_DAYS = 7;
 
-const params = new URLSearchParams(location.search);
-const budgetId = params.get("budget") || "sean-budget";
-let state = loadLocalState();
-let editingSpendId = null;
-let deferredPrompt = null;
-let syncTimer = null;
-let latestServerTimestamp = null;
-let isApplyingRemote = false;
+function getMode(){return localStorage.getItem("mode")}
+function setMode(m){localStorage.setItem("mode",m)}
 
-const $ = id => document.getElementById(id);
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-function clone(v){ return JSON.parse(JSON.stringify(v)); }
-function num(v){ const n = parseFloat(v); return Number.isFinite(n) ? n : 0; }
-
-function normaliseState(raw){
-  const merged = {...clone(defaultState), ...(raw || {})};
-
-  merged.appName = merged.appName || "BudgetFlow Shared";
-  merged.logo = merged.logo || "";
-  merged.carryBalance = String(num(merged.carryBalance));
-  merged.income = String(num(merged.income));
-  merged.expectedIncome = String(num(merged.expectedIncome));
-  merged.currentBalance = merged.currentBalance === "" ? "" : String(num(merged.currentBalance));
-  merged.savingsTarget = String(num(merged.savingsTarget));
-  merged.funTarget = String(num(merged.funTarget));
-  merged.lastPay = merged.lastPay || "";
-  merged.nextPay = merged.nextPay || "";
-
-  if(!Array.isArray(merged.bills)){
-    merged.bills = clone(defaultState.bills);
-  } else {
-    merged.bills = merged.bills.map((b, i) => ({
-      id: b?.id || Date.now() + i,
-      name: b?.name || "",
-      amount: String(num(b?.amount)),
-      frequency: ["weekly","fortnightly","monthly","quarterly","yearly"].includes(b?.frequency) ? b.frequency : "weekly"
-    }));
+function getTrialStart(){
+  let t = localStorage.getItem("trialStart");
+  if(!t){
+    t = Date.now();
+    localStorage.setItem("trialStart",t);
   }
-
-  if(!Array.isArray(merged.spends)){
-    merged.spends = [];
-  } else {
-    merged.spends = merged.spends
-      .filter(s => s !== null && s !== undefined)
-      .map((s, i) => {
-        if(typeof s === "number"){
-          return {
-            id: Date.now() + i,
-            name: "Spend",
-            amount: String(num(s)),
-            category: "General",
-            person: "Joint",
-            date: todayISO()
-          };
-        }
-        return {
-          id: s.id || Date.now() + i,
-          name: s.name || "Spend",
-          amount: String(num(s.amount)),
-          category: s.category || "General",
-          person: s.person || "Joint",
-          date: s.date || todayISO()
-        };
-      });
-  }
-
-  if(!Array.isArray(merged.history)){
-    merged.history = [];
-  } else {
-    merged.history = merged.history.map((h, i) => ({
-      id: h?.id || Date.now() + i,
-      label: h?.label || "",
-      weekStart: h?.weekStart || "",
-      weekEnd: h?.weekEnd || "",
-      carry: String(num(h?.carry)),
-      income: String(num(h?.income)),
-      savings: String(num(h?.savings)),
-      spent: String(num(h?.spent)),
-      left: String(num(h?.left))
-    }));
-  }
-
-  return merged;
+  return Number(t);
 }
 
-function loadLocalState(){
-  try{
-    const raw = localStorage.getItem("budgetflow-local-" + budgetId);
-    return raw ? normaliseState(JSON.parse(raw)) : clone(defaultState);
-  }catch{
-    return clone(defaultState);
-  }
+function trialDaysUsed(){
+  return Math.floor((Date.now()-getTrialStart())/86400000);
 }
-function saveLocalState(){ localStorage.setItem("budgetflow-local-" + budgetId, JSON.stringify(state)); }
-function setSyncStatus(t){ $("syncBox").textContent = t; }
-function money(n){ return new Intl.NumberFormat("en-AU",{style:"currency",currency:"AUD",maximumFractionDigits:2}).format(Number.isFinite(n) ? n : 0); }
-function esc(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;"); }
-function todayISO(){ return new Date().toISOString().split("T")[0]; }
-function formatDate(d){ return d.toISOString().split("T")[0]; }
-function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
 
-function daysUntil(dateStr){
-  if(!dateStr) return null;
-  const now = new Date(); now.setHours(0,0,0,0);
-  const d = new Date(dateStr + "T00:00:00");
-  return Math.ceil((d - now) / 86400000);
+function trialActive(){
+  return trialDaysUsed() < TRIAL_DAYS;
 }
-function deriveNextPay(){ if(!state.lastPay) return; const d = new Date(state.lastPay + "T00:00:00"); d.setDate(d.getDate() + 7); state.nextPay = formatDate(d); }
-function deriveLastPay(){ if(!state.nextPay) return; const d = new Date(state.nextPay + "T00:00:00"); d.setDate(d.getDate() - 7); state.lastPay = formatDate(d); }
-function weeklyBillsTotal(){ return state.bills.reduce((sum,b) => sum + num(b.amount) * (frequencies[b.frequency] || 0), 0); }
-function spendTotal(){ return state.spends.reduce((sum,s) => sum + num(s.amount), 0); }
 
-function summary(){
-  const carry = num(state.carryBalance);
-  const income = num(state.income);
-  const bills = weeklyBillsTotal();
-  const savings = num(state.savingsTarget);
-  const fun = num(state.funTarget);
-  const spent = spendTotal();
-  const baseAvailable = carry + income - bills - savings - fun - spent;
-  const bankBalance = num(state.currentBalance);
-  const liveAvailable = bankBalance > 0 ? bankBalance - spent : baseAvailable;
-  const d = daysUntil(state.nextPay);
-  const daysLeft = d === null ? 7 : Math.max(d, 1);
-  const safeToday = liveAvailable / daysLeft;
-  return {carry,income,bills,savings,fun,spent,liveAvailable,safeToday,days:d,forecast:liveAvailable};
+function isPremium(){
+  return localStorage.getItem("premium")==="true";
 }
-function yearTotals(){
-  const year = new Date().getFullYear();
-  const hist = state.history.filter(h => new Date((h.weekStart||todayISO()) + "T00:00:00").getFullYear() === year);
-  const current = summary();
-  return {
-    spent: hist.reduce((s,h)=>s + num(h.spent),0) + current.spent,
-    saved: hist.reduce((s,h)=>s + num(h.savings),0) + current.savings
-  };
+
+function setPremium(v){
+  localStorage.setItem("premium",v?"true":"false");
 }
-function statusText(s){
-  if(s.liveAvailable < 0) return ["dangerBox","Overspending alert — you're below zero."];
-  if(s.liveAvailable < (s.bills * 0.25)) return ["warnBox","Budget is getting tight."];
-  return ["ok","You are on track."];
-}
-function renderTop(){
-  const s = summary();
-  const st = statusText(s);
-  $("heroTitle").textContent = state.appName || "BudgetFlow Shared";
-  $("availableNow").textContent = money(s.liveAvailable);
-  $("safeToday").textContent = money(s.safeToday);
-  $("daysToPay").textContent = s.days === null ? "—" : s.days + "d";
-  $("weekSpent").textContent = money(s.spent);
-  $("weeklyBills").textContent = money(s.bills);
-  $("sumCarry").textContent = money(s.carry);
-  $("sumIncome").textContent = money(s.income);
-  $("sumSavings").textContent = money(s.savings);
-  $("sumFun").textContent = money(s.fun);
-  $("sumForecast").textContent = money(s.forecast);
-  const box = $("statusBox");
-  box.className = "notice " + st[0];
-  box.textContent = st[1];
-}
-function renderLogo(){
-  const box = $("logoBox");
-  if(state.logo) box.innerHTML = '<img alt="logo" src="' + state.logo + '">';
-  else box.textContent = "💸";
-}
-function renderSpends(){
-  $("spendCount").textContent = state.spends.length + (state.spends.length===1 ? " item" : " items");
-  const holder = $("spendList");
-  holder.innerHTML = "";
-  if(!state.spends.length){
-    holder.innerHTML = '<div class="small">No spends added yet.</div>';
+
+function updateUI(){
+  const mode = getMode();
+
+  if(!mode){
+    document.getElementById("setupBox").classList.remove("hidden");
     return;
   }
-  state.spends.slice().reverse().forEach(sp => {
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerHTML = '<div class="between"><div><div style="font-weight:700">' + esc(sp.name || "Spend") + '</div><div class="small">' + esc(sp.category || "General") + ' • ' + esc(sp.person || "Joint") + ' • ' + esc(sp.date || "") + '</div></div><div style="font-weight:700">' + money(num(sp.amount)) + '</div></div><div class="row" style="margin-top:10px"><button class="secondary edit-btn">Edit</button><button class="danger del-btn">Delete</button></div>';
-    div.querySelector(".edit-btn").addEventListener("click", () => loadSpend(sp.id));
-    div.querySelector(".del-btn").addEventListener("click", () => {
-      state.spends = state.spends.filter(x => x.id !== sp.id);
-      stateChanged();
-      renderAll();
-    });
-    holder.appendChild(div);
-  });
-}
-function renderBills(){
-  const holder = $("billList");
-  holder.innerHTML = "";
-  state.bills.forEach((bill, idx) => {
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerHTML = '<div class="row"><div><div class="label">Bill name</div><input data-field="name" type="text" value="' + esc(bill.name) + '" placeholder="Bill name"></div><div><div class="label">Amount</div><input data-field="amount" type="number" value="' + esc(bill.amount) + '" placeholder="0"></div></div><div class="row" style="margin-top:10px"><div><div class="label">Frequency</div><select data-field="frequency">' + Object.keys(frequencies).map(f => '<option value="' + f + '" ' + (bill.frequency===f?'selected':'') + '>' + cap(f) + '</option>').join('') + '</select></div><div style="max-width:120px"><div class="label">&nbsp;</div><button class="danger del-bill">Delete</button></div></div><div class="small" style="margin-top:8px">Weekly equivalent: ' + money(num(bill.amount) * (frequencies[bill.frequency] || 0)) + '</div>';
-    div.querySelectorAll("[data-field]").forEach(el => {
-      const handler = (e) => {
-        state.bills[idx][e.target.dataset.field] = e.target.value;
-        stateChanged();
-        if(e.target.tagName === "SELECT") renderBills();
-        renderTop();
-      };
-      if(el.tagName === "SELECT") el.addEventListener("change", handler);
-      else el.addEventListener("input", handler);
-    });
-    div.querySelector(".del-bill").addEventListener("click", () => {
-      state.bills.splice(idx,1);
-      stateChanged();
-      renderAll();
-    });
-    holder.appendChild(div);
-  });
-}
-function renderHistory(){
-  const holder = $("historyList");
-  holder.innerHTML = "";
-  const y = yearTotals();
-  $("yearSpent").textContent = money(y.spent);
-  $("yearSaved").textContent = money(y.saved);
-  if(!state.history.length){
-    holder.innerHTML = '<div class="small">No archived weeks yet.</div>';
+
+  document.getElementById("setupBox").classList.add("hidden");
+
+  if(mode==="solo"){
+    document.getElementById("modeText").innerText="Solo Free Mode";
     return;
   }
-  state.history.slice().reverse().forEach(h => {
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerHTML = '<div style="font-weight:700">' + esc(h.label || h.weekStart) + '</div><div class="small" style="margin-top:6px">B/F ' + money(num(h.carry)) + ' • Income ' + money(num(h.income)) + ' • Spent ' + money(num(h.spent)) + ' • Saved ' + money(num(h.savings)) + '</div><div class="small" style="margin-top:4px">Left: ' + money(num(h.left)) + '</div>';
-    holder.appendChild(div);
-  });
-}
-function renderSettings(){
-  $("appName").value = state.appName;
-  $("carryBalance").value = state.carryBalance === "0" ? "" : state.carryBalance;
-  $("income").value = state.income === "0" ? "" : state.income;
-  $("expectedIncome").value = state.expectedIncome === "0" ? "" : state.expectedIncome;
-  $("currentBalance").value = state.currentBalance === "0" ? "" : state.currentBalance;
-  $("savingsTarget").value = state.savingsTarget === "0" ? "" : state.savingsTarget;
-  $("funTarget").value = state.funTarget === "0" ? "" : state.funTarget;
-  $("lastPay").value = state.lastPay;
-  $("nextPay").value = state.nextPay;
-  $("budgetIdInput").value = budgetId;
-}
-function renderAll(){
-  renderLogo();
-  renderTop();
-  renderSpends();
-  renderBills();
-  renderHistory();
-  renderSettings();
-}
-function switchPage(name){
-  ["home","spends","bills","history","settings"].forEach(p => {
-    document.getElementById("page-" + p).classList.toggle("hidden", p !== name);
-  });
-  document.querySelectorAll(".tab").forEach(btn => btn.classList.toggle("active", btn.dataset.page === name));
-}
-function clearSpendForm(){
-  editingSpendId = null;
-  $("spendName").value = "";
-  $("spendAmount").value = "";
-  $("spendCategory").value = "General";
-  $("spendPerson").value = "Joint";
-  $("spendDate").value = todayISO();
-  $("cancelEditBtn").classList.add("hidden");
-}
-function loadSpend(id){
-  const sp = state.spends.find(x => x.id === id);
-  if(!sp) return;
-  editingSpendId = id;
-  $("spendName").value = sp.name || "";
-  $("spendAmount").value = sp.amount || "";
-  $("spendCategory").value = sp.category || "General";
-  $("spendPerson").value = sp.person || "Joint";
-  $("spendDate").value = sp.date || todayISO();
-  $("cancelEditBtn").classList.remove("hidden");
-  switchPage("spends");
-}
-function saveSpend(){
-  const spend = {
-    id: editingSpendId || Date.now(),
-    name: $("spendName").value.trim() || "Spend",
-    amount: String(num($("spendAmount").value)),
-    category: $("spendCategory").value,
-    person: $("spendPerson").value,
-    date: $("spendDate").value || todayISO()
-  };
-  if(!num(spend.amount)) return;
-  if(editingSpendId) state.spends = state.spends.map(x => x.id === editingSpendId ? spend : x);
-  else state.spends.push(spend);
-  stateChanged();
-  clearSpendForm();
-  renderAll();
-}
-function startNewWeek(){
-  const s = summary();
-  state.history.push({
-    id: Date.now(),
-    label: (state.lastPay || todayISO()) + " to " + (state.nextPay || "—"),
-    weekStart: state.lastPay || todayISO(),
-    weekEnd: state.nextPay || todayISO(),
-    carry: String(num(state.carryBalance)),
-    income: String(num(state.income)),
-    savings: String(num(state.savingsTarget)),
-    spent: String(num(s.spent)),
-    left: String(num(s.liveAvailable))
-  });
-  state.carryBalance = String(Math.max(s.liveAvailable, 0));
-  state.currentBalance = "";
-  state.spends = [];
-  state.income = state.expectedIncome || state.income;
-  if(state.nextPay){
-    state.lastPay = state.nextPay;
-    const d = new Date(state.nextPay + "T00:00:00");
-    d.setDate(d.getDate() + 7);
-    state.nextPay = formatDate(d);
+
+  if(mode==="couples"){
+    if(isPremium()){
+      document.getElementById("modeText").innerText="Couples Premium";
+      return;
+    }
+
+    if(trialActive()){
+      document.getElementById("modeText").innerText=
+        "Couples Trial ("+(TRIAL_DAYS-trialDaysUsed())+" days left)";
+      return;
+    }
+
+    document.getElementById("modeText").innerText="Trial Ended";
+    document.getElementById("upgradeBox").classList.remove("hidden");
   }
-  stateChanged();
-  renderAll();
-}
-function exportCsv(){
-  const rows = [["Week Start","Week End","Carry Forward","Income","Saved","Spent","Left"]];
-  state.history.forEach(h => rows.push([h.weekStart, h.weekEnd, h.carry, h.income, h.savings, h.spent, h.left]));
-  const csv = rows.map(r => r.map(c => '"' + String(c ?? "").replaceAll('"','""') + '"').join(",")).join("\\n");
-  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "budgetflow-history.csv";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-function copySharedLink(){
-  const url = location.origin + location.pathname + "?budget=" + encodeURIComponent(budgetId);
-  navigator.clipboard.writeText(url).then(() => setSyncStatus("Shared link copied."));
 }
 
-async function ensureRemoteRow(){
-  setSyncStatus("Connecting to shared budget…");
-  const res = await sb.from(TABLE_NAME).select("*").eq("id", budgetId).maybeSingle();
-  if(res.error){
-    setSyncStatus("Connection error. Run the SQL setup first.");
-    return;
-  }
-  if(res.data){
-    latestServerTimestamp = res.data.updated_at || res.data.created_at || null;
-    state = normaliseState(res.data.payload);
-    saveLocalState();
-    renderAll();
-    setSyncStatus("Connected. Live sync active.");
-    return;
-  }
-  const ins = await sb.from(TABLE_NAME).insert({id: budgetId, payload: state}).select().single();
-  if(ins.error){
-    setSyncStatus("Could not create shared budget row.");
-    return;
-  }
-  latestServerTimestamp = ins.data.updated_at || ins.data.created_at || null;
-  setSyncStatus("Shared budget created.");
-}
-async function pushRemote(){
-  if(isApplyingRemote) return;
-  clearTimeout(syncTimer);
-  saveLocalState();
-  setSyncStatus("Saving to cloud…");
-  const res = await sb.from(TABLE_NAME).upsert({id: budgetId, payload: state}).select().single();
-  if(res.error){
-    setSyncStatus("Save failed. Check SQL setup or internet.");
-    return;
-  }
-  latestServerTimestamp = res.data.updated_at || res.data.created_at || null;
-  setSyncStatus("Saved. Both phones will update.");
-}
-function schedulePush(){
-  clearTimeout(syncTimer);
-  syncTimer = setTimeout(pushRemote, 500);
-}
-function stateChanged(){
-  state = normaliseState(state);
-  saveLocalState();
-  schedulePush();
-}
-async function pullRemote(){
-  const res = await sb.from(TABLE_NAME).select("*").eq("id", budgetId).maybeSingle();
-  if(res.error || !res.data) return;
-  const remoteTs = res.data.updated_at || res.data.created_at || null;
-  if(remoteTs && latestServerTimestamp && new Date(remoteTs) <= new Date(latestServerTimestamp)) return;
-  latestServerTimestamp = remoteTs;
-  isApplyingRemote = true;
-  state = normaliseState(res.data.payload);
-  saveLocalState();
-  renderAll();
-  isApplyingRemote = false;
-  setSyncStatus("Updated from shared cloud.");
+document.getElementById("soloBtn").onclick=()=>{
+  setMode("solo");
+  updateUI();
 }
 
-document.querySelectorAll(".tab").forEach(btn => btn.addEventListener("click", () => switchPage(btn.dataset.page)));
-$("goSpendsBtn").addEventListener("click", () => switchPage("spends"));
-$("fabBtn").addEventListener("click", () => switchPage("spends"));
-$("saveSpendBtn").addEventListener("click", saveSpend);
-$("cancelEditBtn").addEventListener("click", clearSpendForm);
-$("startWeekBtn").addEventListener("click", () => {
-  if(!confirm("Archive this week, carry the remaining balance forward, clear spends, and move pay dates forward by 7 days?")) return;
-  startNewWeek();
-});
-$("addBillBtn").addEventListener("click", () => {
-  state.bills.push({id:Date.now(), name:"", amount:"", frequency:"weekly"});
-  stateChanged();
-  renderBills();
-});
-$("exportBtn").addEventListener("click", exportCsv);
-$("copyLinkBtn").addEventListener("click", copySharedLink);
-$("syncNowBtn").addEventListener("click", pushRemote);
-
-$("appName").addEventListener("input", e => { state.appName = e.target.value; stateChanged(); renderTop(); });
-$("carryBalance").addEventListener("input", e => { state.carryBalance = e.target.value; stateChanged(); renderTop(); renderHistory(); });
-$("income").addEventListener("input", e => { state.income = e.target.value; stateChanged(); renderTop(); });
-$("expectedIncome").addEventListener("input", e => { state.expectedIncome = e.target.value; stateChanged(); });
-$("currentBalance").addEventListener("input", e => { state.currentBalance = e.target.value; stateChanged(); renderTop(); });
-$("savingsTarget").addEventListener("input", e => { state.savingsTarget = e.target.value; stateChanged(); renderTop(); renderHistory(); });
-$("funTarget").addEventListener("input", e => { state.funTarget = e.target.value; stateChanged(); renderTop(); });
-$("lastPay").addEventListener("change", e => { state.lastPay = e.target.value; deriveNextPay(); $("nextPay").value = state.nextPay; stateChanged(); renderTop(); });
-$("nextPay").addEventListener("change", e => { state.nextPay = e.target.value; deriveLastPay(); $("lastPay").value = state.lastPay; stateChanged(); renderTop(); });
-
-$("logoUpload").addEventListener("change", e => {
-  const file = e.target.files && e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    state.logo = reader.result;
-    stateChanged();
-    renderLogo();
-  };
-  reader.readAsDataURL(file);
-});
-
-$("resetBtn").addEventListener("click", () => {
-  if(!confirm("Reset the whole app?")) return;
-  state = clone(defaultState);
-  saveLocalState();
-  stateChanged();
-  clearSpendForm();
-  renderAll();
-});
-
-window.addEventListener("beforeinstallprompt", e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  $("installBtn").classList.remove("hidden");
-});
-$("installBtn").addEventListener("click", async () => {
-  if(!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  $("installBtn").classList.add("hidden");
-});
-
-if("serviceWorker" in navigator){
-  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(console.error));
+document.getElementById("couplesBtn").onclick=()=>{
+  setMode("couples");
+  getTrialStart();
+  updateUI();
 }
 
-if(!state.nextPay && state.lastPay) deriveNextPay();
-if(!state.lastPay && state.nextPay) deriveLastPay();
-$("spendDate").value = todayISO();
-state = normaliseState(state);
-renderAll();
-ensureRemoteRow();
-setInterval(pullRemote, 4000);
+document.getElementById("upgradeBtn").onclick=()=>{
+  setPremium(true);
+  document.getElementById("upgradeBox").classList.add("hidden");
+  updateUI();
+}
+
+document.getElementById("calcBtn").onclick=()=>{
+  let income = parseFloat(document.getElementById("income").value)||0;
+  let bills = parseFloat(document.getElementById("bills").value)||0;
+  let spent = parseFloat(document.getElementById("spent").value)||0;
+
+  let result = income - bills - spent;
+
+  document.getElementById("result").innerText="$"+result.toFixed(2);
+}
+
+updateUI();
+
 </script>
+
 </body>
 </html>
