@@ -719,6 +719,29 @@ state = normaliseState(state);
 renderAll();
 ensureRemoteRow();
 setInterval(pullRemote, 4000);
-</script>
+</script><div id="setupScreen" class="overlay hidden">
+  <div class="modal">
+    <h3>Set up your budget</h3>
+    <p class="small">Takes 30 seconds</p>
+
+    <div id="setupStep1">
+      <div class="label">Weekly income</div>
+      <input id="setupIncome" type="number" placeholder="e.g. 1500">
+      <button id="toStep2" class="success" style="margin-top:10px">Next</button>
+    </div>
+
+    <div id="setupStep2" class="hidden">
+      <div class="label">Weekly bills (optional)</div>
+      <input id="setupBills" type="number" placeholder="e.g. 500">
+      <button id="toStep3" class="success" style="margin-top:10px">Next</button>
+    </div>
+
+    <div id="setupStep3" class="hidden">
+      <div class="label">Savings target</div>
+      <input id="setupSavings" type="number" placeholder="e.g. 200">
+      <button id="finishSetup" class="success" style="margin-top:10px">Finish</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
