@@ -78,7 +78,7 @@
       <div id="syncBox" class="notice sync">Connecting…</div>
     </div>
 
-    <div id="installCard" class="card hidden">
+    <div id="installCard" class="card">
       <h2>Install BudgetFlow</h2>
       <div class="small">Add it to your phone so it opens like an app.</div>
       <div class="row" style="margin-top:12px">
@@ -123,7 +123,7 @@
       </div>
       <div class="row" style="margin-top:10px">
         <div><div class="label">Category</div><select id="spendCategory"><option>General</option><option>Groceries</option><option>Fuel</option><option>Eating Out</option><option>Kids</option><option>Shopping</option><option>Medical</option><option>Entertainment</option></select></div>
-        <div><div class="label">Who</div><select id="spendPerson"><option>Joint</option><option>Sean</option><option>Wife</option></select></div>
+        <div><div class="label">Who</div><select id="spendPerson"></select></div>
       </div>
       <div style="margin-top:10px"><div class="label">Date</div><input id="spendDate" type="date"></div>
       <div class="row" style="margin-top:10px"><button id="saveSpendBtn">Save Spend</button><button id="cancelEditBtn" class="secondary hidden">Cancel</button></div>
@@ -159,6 +159,12 @@
       <h2>Settings</h2>
       <div><div class="label">App name</div><input id="appName" type="text" placeholder="App name"></div>
       <div style="margin-top:10px"><div class="label">Logo</div><label for="logoUpload" class="pill" style="cursor:pointer">Upload logo</label><input id="logoUpload" class="hidden" type="file" accept="image/*"></div>
+
+      <div class="row" style="margin-top:10px">
+        <div><div class="label">Person 1 name</div><input id="person1Name" type="text" placeholder="e.g. Sean"></div>
+        <div><div class="label">Person 2 name</div><input id="person2Name" type="text" placeholder="e.g. Wife"></div>
+      </div>
+
       <div class="row" style="margin-top:10px">
         <div><div class="label">Balance brought forward</div><input id="carryBalance" type="number" min="0" placeholder="0"></div>
         <div><div class="label">Weekly income</div><input id="income" type="number" min="0" placeholder="0"></div>
@@ -168,7 +174,7 @@
         <div><div class="label">Current bank balance</div><input id="currentBalance" type="number" min="0" placeholder="Optional"></div>
       </div>
       <div class="row" style="margin-top:10px">
-        <div><div class="label">Savings target</div><input id="savingsTarget" type="number" min="0" placeholder="0"></div>
+        <div><div class="label">Savings target (weekly)</div><input id="savingsTarget" type="number" min="0" placeholder="0"></div>
         <div><div class="label">Fun target</div><input id="funTarget" type="number" min="0" placeholder="0"></div>
       </div>
       <div class="row" style="margin-top:10px">
@@ -219,7 +225,7 @@
     </div>
 
     <div id="setupStep3" class="hidden">
-      <div class="label">Savings target</div>
+      <div class="label">Savings target (weekly)</div>
       <input id="setupSavings" type="number" placeholder="e.g. 200">
       <button id="finishSetup" class="success" style="margin-top:10px">Finish</button>
     </div>
@@ -249,6 +255,8 @@ const frequencies = {weekly:1, fortnightly:1/2, monthly:12/52, quarterly:4/52, y
 const defaultState = {
   appName:"BudgetFlow Shared",
   logo:"",
+  person1Name:"Person 1",
+  person2Name:"Person 2",
   carryBalance:"",
   income:"",
   expectedIncome:"",
@@ -311,11 +319,26 @@ function esc(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&l
 function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
 function money(n){ return new Intl.NumberFormat("en-AU",{style:"currency",currency:"AUD",maximumFractionDigits:2}).format(Number.isFinite(n) ? n : 0); }
 
+function getPeopleOptions(){
+  return ["Joint", state.person1Name || "Person 1", state.person2Name || "Person 2"];
+}
+
+function renderPeopleSelect(){
+  const select = $("spendPerson");
+  const current = select.value || "Joint";
+  const options = getPeopleOptions();
+  select.innerHTML = options.map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join("");
+  if(options.includes(current)) select.value = current;
+  else select.value = "Joint";
+}
+
 function normaliseState(raw){
   const merged = {...clone(defaultState), ...(raw || {})};
 
   merged.appName = merged.appName || "BudgetFlow Shared";
   merged.logo = merged.logo || "";
+  merged.person1Name = merged.person1Name || "Person 1";
+  merged.person2Name = merged.person2Name || "Person 2";
   merged.carryBalance = String(num(merged.carryBalance));
   merged.income = String(num(merged.income));
   merged.expectedIncome = String(num(merged.expectedIncome));
@@ -415,13 +438,31 @@ function summary(){
   const savings = num(state.savingsTarget);
   const fun = num(state.funTarget);
   const spent = spendTotal();
-  const baseAvailable = carry + income - bills - savings - fun - spent;
+
+  const plannedAvailable = carry + income - bills - savings - fun - spent;
+
   const bankBalance = num(state.currentBalance);
-  const liveAvailable = bankBalance > 0 ? bankBalance - spent : baseAvailable;
+
+  const liveAvailable = bankBalance > 0
+    ? bankBalance - bills - savings - fun - spent
+    : plannedAvailable;
+
   const d = daysUntil(state.nextPay);
   const daysLeft = d === null ? 7 : Math.max(d, 1);
   const safeToday = liveAvailable / daysLeft;
-  return {carry,income,bills,savings,fun,spent,liveAvailable,safeToday,days:d,forecast:liveAvailable};
+
+  return {
+    carry,
+    income,
+    bills,
+    savings,
+    fun,
+    spent,
+    liveAvailable,
+    safeToday,
+    days:d,
+    forecast:liveAvailable
+  };
 }
 
 function yearTotals(){
@@ -533,6 +574,8 @@ function renderHistory(){
 
 function renderSettings(){
   $("appName").value = state.appName;
+  $("person1Name").value = state.person1Name;
+  $("person2Name").value = state.person2Name;
   $("carryBalance").value = state.carryBalance === "0" ? "" : state.carryBalance;
   $("income").value = state.income === "0" ? "" : state.income;
   $("expectedIncome").value = state.expectedIncome === "0" ? "" : state.expectedIncome;
@@ -547,6 +590,7 @@ function renderSettings(){
 function renderAll(){
   renderLogo();
   renderTop();
+  renderPeopleSelect();
   renderSpends();
   renderBills();
   renderHistory();
@@ -577,6 +621,7 @@ function loadSpend(id){
   $("spendName").value = sp.name || "";
   $("spendAmount").value = sp.amount || "";
   $("spendCategory").value = sp.category || "General";
+  renderPeopleSelect();
   $("spendPerson").value = sp.person || "Joint";
   $("spendDate").value = sp.date || todayISO();
   $("cancelEditBtn").classList.remove("hidden");
@@ -661,6 +706,13 @@ function closeModal(){
 
 function showInstallCard(){
   $("installCard").classList.remove("hidden");
+  if(deferredPrompt){
+    $("installNowBtn").textContent = "Install App";
+    $("hideInstallCardBtn").textContent = "Not now";
+  } else {
+    $("installNowBtn").textContent = "Install not ready yet";
+    $("hideInstallCardBtn").textContent = "Close";
+  }
 }
 
 function hideInstallCard(){
@@ -769,7 +821,10 @@ $("toStep3").addEventListener("click", () => {
 $("finishSetup").addEventListener("click", finishSetup);
 
 $("installNowBtn").addEventListener("click", async () => {
-  if(!deferredPrompt) return;
+  if(!deferredPrompt){
+    alert("To install manually, tap your browser menu and choose 'Add to Home screen' or 'Install app'.");
+    return;
+  }
   deferredPrompt.prompt();
   await deferredPrompt.userChoice;
   deferredPrompt = null;
@@ -780,6 +835,8 @@ $("installNowBtn").addEventListener("click", async () => {
 $("hideInstallCardBtn").addEventListener("click", hideInstallCard);
 
 $("appName").addEventListener("input", e => { state.appName = e.target.value; stateChanged(); renderTop(); });
+$("person1Name").addEventListener("input", e => { state.person1Name = e.target.value || "Person 1"; stateChanged(); renderPeopleSelect(); renderSpends(); });
+$("person2Name").addEventListener("input", e => { state.person2Name = e.target.value || "Person 2"; stateChanged(); renderPeopleSelect(); renderSpends(); });
 $("carryBalance").addEventListener("input", e => { state.carryBalance = e.target.value; stateChanged(); renderTop(); renderHistory(); });
 $("income").addEventListener("input", e => { state.income = e.target.value; stateChanged(); renderTop(); });
 $("expectedIncome").addEventListener("input", e => { state.expectedIncome = e.target.value; stateChanged(); });
@@ -822,7 +879,10 @@ window.addEventListener("beforeinstallprompt", e => {
 });
 
 $("installBtn").addEventListener("click", async () => {
-  if(!deferredPrompt) return;
+  if(!deferredPrompt){
+    alert("To install manually, tap your browser menu and choose 'Add to Home screen' or 'Install app'.");
+    return;
+  }
   deferredPrompt.prompt();
   await deferredPrompt.userChoice;
   deferredPrompt = null;
@@ -840,6 +900,7 @@ $("spendDate").value = todayISO();
 state = normaliseState(state);
 renderAll();
 showSetupIfNeeded();
+showInstallCard();
 ensureRemoteRow();
 setInterval(pullRemote, 4000);
 </script>
