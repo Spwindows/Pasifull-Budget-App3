@@ -193,6 +193,31 @@
   <button class="tab" data-page="history">History</button>
   <button class="tab" data-page="settings">Settings</button>
 </nav>
+  
+  <div id="setupScreen" class="overlay hidden">
+  <div class="modal">
+    <h3>Set up your budget</h3>
+    <p class="small">Takes 30 seconds</p>
+
+    <div id="setupStep1">
+      <div class="label">Weekly income</div>
+      <input id="setupIncome" type="number" placeholder="e.g. 1500">
+      <button id="toStep2" class="success" style="margin-top:10px">Next</button>
+    </div>
+
+    <div id="setupStep2" class="hidden">
+      <div class="label">Weekly bills (optional)</div>
+      <input id="setupBills" type="number" placeholder="e.g. 500">
+      <button id="toStep3" class="success" style="margin-top:10px">Next</button>
+    </div>
+
+    <div id="setupStep3" class="hidden">
+      <div class="label">Savings target</div>
+      <input id="setupSavings" type="number" placeholder="e.g. 200">
+      <button id="finishSetup" class="success" style="margin-top:10px">Finish</button>
+    </div>
+  </div>
+</div>
 
 <div id="coupleModal" class="overlay hidden">
   <div class="modal">
@@ -244,7 +269,32 @@ let isApplyingRemote = false;
 
 const $ = id => document.getElementById(id);
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+function showSetupIfNeeded(){
+  if(localStorage.getItem("setupDone-" + budgetId)) return;
+  $("setupScreen").classList.remove("hidden");
+}
 
+function finishSetup(){
+  state.income = $("setupIncome").value || "0";
+  state.savingsTarget = $("setupSavings").value || "0";
+
+  const bills = $("setupBills").value;
+  if(bills && Number(bills) > 0){
+    state.bills = [{
+      id: Date.now(),
+      name: "General Bills",
+      amount: bills,
+      frequency: "weekly"
+    }];
+  }
+
+  localStorage.setItem("setupDone-" + budgetId, "true");
+
+  stateChanged();
+  renderAll();
+
+  $("setupScreen").classList.add("hidden");
+}
 function clone(v){ return JSON.parse(JSON.stringify(v)); }
 function num(v){ const n = parseFloat(v); return Number.isFinite(n) ? n : 0; }
 function todayISO(){ return new Date().toISOString().split("T")[0]; }
@@ -672,6 +722,17 @@ $("lastPay").addEventListener("change", e => { state.lastPay = e.target.value; d
 $("nextPay").addEventListener("change", e => { state.nextPay = e.target.value; deriveLastPay(); $("lastPay").value = state.lastPay; stateChanged(); renderTop(); });
 
 $("logoUpload").addEventListener("change", e => {
+  $("toStep2").addEventListener("click", () => {
+  $("setupStep1").classList.add("hidden");
+  $("setupStep2").classList.remove("hidden");
+});
+
+$("toStep3").addEventListener("click", () => {
+  $("setupStep2").classList.add("hidden");
+  $("setupStep3").classList.remove("hidden");
+});
+
+$("finishSetup").addEventListener("click", finishSetup);
   const file = e.target.files && e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
@@ -693,6 +754,7 @@ $("resetBtn").addEventListener("click", () => {
   stateChanged();
   clearSpendForm();
   renderAll();
+  showSetupIfNeeded();
 });
 
 window.addEventListener("beforeinstallprompt", e => {
@@ -718,30 +780,8 @@ $("spendDate").value = todayISO();
 state = normaliseState(state);
 renderAll();
 ensureRemoteRow();
-setInterval(pullRemote, 4000);
-</script><div id="setupScreen" class="overlay hidden">
-  <div class="modal">
-    <h3>Set up your budget</h3>
-    <p class="small">Takes 30 seconds</p>
-
-    <div id="setupStep1">
-      <div class="label">Weekly income</div>
-      <input id="setupIncome" type="number" placeholder="e.g. 1500">
-      <button id="toStep2" class="success" style="margin-top:10px">Next</button>
-    </div>
-
-    <div id="setupStep2" class="hidden">
-      <div class="label">Weekly bills (optional)</div>
-      <input id="setupBills" type="number" placeholder="e.g. 500">
-      <button id="toStep3" class="success" style="margin-top:10px">Next</button>
-    </div>
-
-    <div id="setupStep3" class="hidden">
-      <div class="label">Savings target</div>
-      <input id="setupSavings" type="number" placeholder="e.g. 200">
-      <button id="finishSetup" class="success" style="margin-top:10px">Finish</button>
-    </div>
-  </div>
-</div>
+setInterval(pullRemote, 4000);setInterval(pullRemote, 4000);
+</script>
 </body>
 </html>
+
