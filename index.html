@@ -299,7 +299,17 @@ const defaultState = {
 };
 
 const params = new URLSearchParams(location.search);
-const budgetId = params.get("budget") || "sean-budget";
+
+let budgetId = params.get("budget");
+
+// If no budget ID, create one
+if (!budgetId) {
+  budgetId = "bf-" + Math.random().toString(36).substring(2, 10);
+
+  // update URL WITHOUT reload
+  const newUrl = location.origin + location.pathname + "?budget=" + budgetId;
+  window.history.replaceState({}, "", newUrl);
+}
 let state = loadLocalState();
 let editingSpendId = null;
 let deferredPrompt = null;
