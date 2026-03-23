@@ -78,6 +78,15 @@
       <div id="syncBox" class="notice sync">Connecting…</div>
     </div>
 
+    <div id="installCard" class="card hidden">
+      <h2>Install BudgetFlow</h2>
+      <div class="small">Add it to your phone so it opens like an app.</div>
+      <div class="row" style="margin-top:12px">
+        <button id="installNowBtn" class="success">Install App</button>
+        <button id="hideInstallCardBtn" class="secondary">Not now</button>
+      </div>
+    </div>
+
     <div class="card">
       <div class="label">Available now</div>
       <div id="availableNow" class="big">$0.00</div>
@@ -650,6 +659,14 @@ function closeModal(){
   $("coupleModal").classList.add("hidden");
 }
 
+function showInstallCard(){
+  $("installCard").classList.remove("hidden");
+}
+
+function hideInstallCard(){
+  $("installCard").classList.add("hidden");
+}
+
 async function ensureRemoteRow(){
   setSyncStatus("Connecting to shared budget…");
   const res = await sb.from(TABLE_NAME).select("*").eq("id", budgetId).maybeSingle();
@@ -745,13 +762,22 @@ $("toStep2").addEventListener("click", () => {
   $("setupStep1").classList.add("hidden");
   $("setupStep2").classList.remove("hidden");
 });
-
 $("toStep3").addEventListener("click", () => {
   $("setupStep2").classList.add("hidden");
   $("setupStep3").classList.remove("hidden");
 });
-
 $("finishSetup").addEventListener("click", finishSetup);
+
+$("installNowBtn").addEventListener("click", async () => {
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  hideInstallCard();
+  $("installBtn").classList.add("hidden");
+});
+
+$("hideInstallCardBtn").addEventListener("click", hideInstallCard);
 
 $("appName").addEventListener("input", e => { state.appName = e.target.value; stateChanged(); renderTop(); });
 $("carryBalance").addEventListener("input", e => { state.carryBalance = e.target.value; stateChanged(); renderTop(); renderHistory(); });
@@ -792,6 +818,7 @@ window.addEventListener("beforeinstallprompt", e => {
   e.preventDefault();
   deferredPrompt = e;
   $("installBtn").classList.remove("hidden");
+  showInstallCard();
 });
 
 $("installBtn").addEventListener("click", async () => {
@@ -800,6 +827,7 @@ $("installBtn").addEventListener("click", async () => {
   await deferredPrompt.userChoice;
   deferredPrompt = null;
   $("installBtn").classList.add("hidden");
+  hideInstallCard();
 });
 
 if("serviceWorker" in navigator){
