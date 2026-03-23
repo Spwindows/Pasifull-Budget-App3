@@ -167,7 +167,6 @@
         <div><div class="label">Next pay date</div><input id="nextPay" type="date"></div>
       </div>
       <div style="margin-top:10px"><div class="label">Shared budget ID</div><input id="budgetIdInput" class="mono" type="text" readonly></div>
-
       <div class="row" style="margin-top:10px">
         <button id="copyLinkBtn" class="secondary">Copy Shared Link</button>
         <button id="createCoupleBtn" class="warn">Create New Couple</button>
@@ -175,7 +174,6 @@
       <div class="row" style="margin-top:10px">
         <button id="syncNowBtn" class="success">Sync Now</button>
       </div>
-
       <div class="row" style="margin-top:12px">
         <button id="installBtn" class="success hidden">Install App</button>
         <button id="resetBtn" class="danger">Reset All</button>
@@ -193,8 +191,8 @@
   <button class="tab" data-page="history">History</button>
   <button class="tab" data-page="settings">Settings</button>
 </nav>
-  
-  <div id="setupScreen" class="overlay hidden">
+
+<div id="setupScreen" class="overlay hidden">
   <div class="modal">
     <h3>Set up your budget</h3>
     <p class="small">Takes 30 seconds</p>
@@ -260,6 +258,7 @@ const defaultState = {
 
 const params = new URLSearchParams(location.search);
 const budgetId = params.get("budget") || "sean-budget";
+
 let state = loadLocalState();
 let editingSpendId = null;
 let deferredPrompt = null;
@@ -268,33 +267,8 @@ let latestServerTimestamp = null;
 let isApplyingRemote = false;
 
 const $ = id => document.getElementById(id);
-  function showSetupIfNeeded(){
-  if(localStorage.getItem("setupDone-" + budgetId)) return;
-  $("setupScreen").classList.remove("hidden");
-}
-
-function finishSetup(){
-  state.income = $("setupIncome").value || "0";
-  state.savingsTarget = $("setupSavings").value || "0";
-
-  const bills = $("setupBills").value;
-  if(bills && Number(bills) > 0){
-    state.bills = [{
-      id: Date.now(),
-      name: "General Bills",
-      amount: bills,
-      frequency: "weekly"
-    }];
-  }
-
-  localStorage.setItem("setupDone-" + budgetId, "true");
-
-  stateChanged();
-  renderAll();
-
-  $("setupScreen").classList.add("hidden");
-}
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 function showSetupIfNeeded(){
   if(localStorage.getItem("setupDone-" + budgetId)) return;
   $("setupScreen").classList.remove("hidden");
@@ -315,12 +289,11 @@ function finishSetup(){
   }
 
   localStorage.setItem("setupDone-" + budgetId, "true");
-
   stateChanged();
   renderAll();
-
   $("setupScreen").classList.add("hidden");
 }
+
 function clone(v){ return JSON.parse(JSON.stringify(v)); }
 function num(v){ const n = parseFloat(v); return Number.isFinite(n) ? n : 0; }
 function todayISO(){ return new Date().toISOString().split("T")[0]; }
@@ -387,9 +360,11 @@ function loadLocalState(){
     return clone(defaultState);
   }
 }
+
 function saveLocalState(){
   localStorage.setItem("budgetflow-local-" + budgetId, JSON.stringify(state));
 }
+
 function setSyncStatus(t){
   $("syncBox").textContent = t;
 }
@@ -401,24 +376,29 @@ function daysUntil(dateStr){
   const d = new Date(dateStr + "T00:00:00");
   return Math.ceil((d - now) / 86400000);
 }
+
 function deriveNextPay(){
   if(!state.lastPay) return;
   const d = new Date(state.lastPay + "T00:00:00");
   d.setDate(d.getDate()+7);
   state.nextPay = formatDate(d);
 }
+
 function deriveLastPay(){
   if(!state.nextPay) return;
   const d = new Date(state.nextPay + "T00:00:00");
   d.setDate(d.getDate()-7);
   state.lastPay = formatDate(d);
 }
+
 function weeklyBillsTotal(){
   return state.bills.reduce((sum,b)=> sum + num(b.amount)*(frequencies[b.frequency]||0), 0);
 }
+
 function spendTotal(){
   return state.spends.reduce((sum,s)=> sum + num(s.amount), 0);
 }
+
 function summary(){
   const carry = num(state.carryBalance);
   const income = num(state.income);
@@ -434,6 +414,7 @@ function summary(){
   const safeToday = liveAvailable / daysLeft;
   return {carry,income,bills,savings,fun,spent,liveAvailable,safeToday,days:d,forecast:liveAvailable};
 }
+
 function yearTotals(){
   const year = new Date().getFullYear();
   const hist = state.history.filter(h => new Date((h.weekStart||todayISO()) + "T00:00:00").getFullYear() === year);
@@ -443,11 +424,13 @@ function yearTotals(){
     saved: hist.reduce((s,h)=> s + num(h.savings),0) + current.savings
   };
 }
+
 function statusText(s){
   if(s.liveAvailable < 0) return ["dangerBox","Overspending alert — you're below zero."];
   if(s.liveAvailable < (s.bills * 0.25)) return ["warnBox","Budget is getting tight."];
   return ["ok","You are on track."];
 }
+
 function renderTop(){
   const s = summary();
   const st = statusText(s);
@@ -466,11 +449,13 @@ function renderTop(){
   box.className = "notice " + st[0];
   box.textContent = st[1];
 }
+
 function renderLogo(){
   const box = $("logoBox");
   if(state.logo) box.innerHTML = '<img alt="logo" src="' + state.logo + '">';
   else box.textContent = "💸";
 }
+
 function renderSpends(){
   $("spendCount").textContent = state.spends.length + (state.spends.length===1 ? " item" : " items");
   const holder = $("spendList");
@@ -492,6 +477,7 @@ function renderSpends(){
     holder.appendChild(div);
   });
 }
+
 function renderBills(){
   const holder = $("billList");
   holder.innerHTML = "";
@@ -517,6 +503,7 @@ function renderBills(){
     holder.appendChild(div);
   });
 }
+
 function renderHistory(){
   const holder = $("historyList");
   holder.innerHTML = "";
@@ -534,6 +521,7 @@ function renderHistory(){
     holder.appendChild(div);
   });
 }
+
 function renderSettings(){
   $("appName").value = state.appName;
   $("carryBalance").value = state.carryBalance === "0" ? "" : state.carryBalance;
@@ -546,6 +534,7 @@ function renderSettings(){
   $("nextPay").value = state.nextPay;
   $("budgetIdInput").value = budgetId;
 }
+
 function renderAll(){
   renderLogo();
   renderTop();
@@ -554,12 +543,14 @@ function renderAll(){
   renderHistory();
   renderSettings();
 }
+
 function switchPage(name){
   ["home","spends","bills","history","settings"].forEach(p => {
     document.getElementById("page-" + p).classList.toggle("hidden", p !== name);
   });
   document.querySelectorAll(".tab").forEach(btn => btn.classList.toggle("active", btn.dataset.page === name));
 }
+
 function clearSpendForm(){
   editingSpendId = null;
   $("spendName").value = "";
@@ -569,6 +560,7 @@ function clearSpendForm(){
   $("spendDate").value = todayISO();
   $("cancelEditBtn").classList.add("hidden");
 }
+
 function loadSpend(id){
   const sp = state.spends.find(x => x.id===id);
   if(!sp) return;
@@ -581,6 +573,7 @@ function loadSpend(id){
   $("cancelEditBtn").classList.remove("hidden");
   switchPage("spends");
 }
+
 function saveSpend(){
   const spend = {
     id: editingSpendId || Date.now(),
@@ -597,6 +590,7 @@ function saveSpend(){
   clearSpendForm();
   renderAll();
 }
+
 function startNewWeek(){
   const s = summary();
   state.history.push({
@@ -623,16 +617,20 @@ function startNewWeek(){
   stateChanged();
   renderAll();
 }
+
 function exportCsv(){
   const rows=[["Week Start","Week End","Carry Forward","Income","Saved","Spent","Left"]];
   state.history.forEach(h => rows.push([h.weekStart,h.weekEnd,h.carry,h.income,h.savings,h.spent,h.left]));
   const csv = rows.map(r => r.map(c => '"' + String(c??"").replaceAll('"','""') + '"').join(",")).join("\\n");
-  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"}), url = URL.createObjectURL(blob), a = document.createElement("a");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
   a.href = url;
   a.download = "budgetflow-history.csv";
   a.click();
   URL.revokeObjectURL(url);
 }
+
 function copySharedLink(){
   navigator.clipboard.writeText(window.location.href).then(() => setSyncStatus("Shared link copied."));
 }
@@ -640,12 +638,14 @@ function copySharedLink(){
 function generateBudgetId(){
   return "bf-" + Math.random().toString(36).substring(2, 10);
 }
+
 function createNewCouple(){
   const newId = generateBudgetId();
   const newUrl = location.origin + location.pathname + "?budget=" + newId;
   $("newCoupleLink").textContent = newUrl;
   $("coupleModal").classList.remove("hidden");
 }
+
 function closeModal(){
   $("coupleModal").classList.add("hidden");
 }
@@ -673,6 +673,7 @@ async function ensureRemoteRow(){
   latestServerTimestamp = ins.data.updated_at || ins.data.created_at || null;
   setSyncStatus("Shared budget created.");
 }
+
 async function pushRemote(){
   if(isApplyingRemote) return;
   clearTimeout(syncTimer);
@@ -686,15 +687,18 @@ async function pushRemote(){
   latestServerTimestamp = res.data.updated_at || res.data.created_at || null;
   setSyncStatus("Saved. Both phones will update.");
 }
+
 function schedulePush(){
   clearTimeout(syncTimer);
   syncTimer = setTimeout(pushRemote, 500);
 }
+
 function stateChanged(){
   state = normaliseState(state);
   saveLocalState();
   schedulePush();
 }
+
 async function pullRemote(){
   const res = await sb.from(TABLE_NAME).select("*").eq("id", budgetId).maybeSingle();
   if(res.error || !res.data) return;
@@ -737,6 +741,18 @@ $("openNewLinkBtn").addEventListener("click", () => {
 });
 $("closeModalBtn").addEventListener("click", closeModal);
 
+$("toStep2").addEventListener("click", () => {
+  $("setupStep1").classList.add("hidden");
+  $("setupStep2").classList.remove("hidden");
+});
+
+$("toStep3").addEventListener("click", () => {
+  $("setupStep2").classList.add("hidden");
+  $("setupStep3").classList.remove("hidden");
+});
+
+$("finishSetup").addEventListener("click", finishSetup);
+
 $("appName").addEventListener("input", e => { state.appName = e.target.value; stateChanged(); renderTop(); });
 $("carryBalance").addEventListener("input", e => { state.carryBalance = e.target.value; stateChanged(); renderTop(); renderHistory(); });
 $("income").addEventListener("input", e => { state.income = e.target.value; stateChanged(); renderTop(); });
@@ -748,17 +764,6 @@ $("lastPay").addEventListener("change", e => { state.lastPay = e.target.value; d
 $("nextPay").addEventListener("change", e => { state.nextPay = e.target.value; deriveLastPay(); $("lastPay").value = state.lastPay; stateChanged(); renderTop(); });
 
 $("logoUpload").addEventListener("change", e => {
-  $("toStep2").addEventListener("click", () => {
-  $("setupStep1").classList.add("hidden");
-  $("setupStep2").classList.remove("hidden");
-});
-
-$("toStep3").addEventListener("click", () => {
-  $("setupStep2").classList.add("hidden");
-  $("setupStep3").classList.remove("hidden");
-});
-
-$("finishSetup").addEventListener("click", finishSetup);
   const file = e.target.files && e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
@@ -788,6 +793,7 @@ window.addEventListener("beforeinstallprompt", e => {
   deferredPrompt = e;
   $("installBtn").classList.remove("hidden");
 });
+
 $("installBtn").addEventListener("click", async () => {
   if(!deferredPrompt) return;
   deferredPrompt.prompt();
@@ -805,9 +811,9 @@ if(!state.lastPay && state.nextPay) deriveLastPay();
 $("spendDate").value = todayISO();
 state = normaliseState(state);
 renderAll();
+showSetupIfNeeded();
 ensureRemoteRow();
-setInterval(pullRemote, 4000);setInterval(pullRemote, 4000);
+setInterval(pullRemote, 4000);
 </script>
 </body>
 </html>
-
