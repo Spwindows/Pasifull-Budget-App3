@@ -559,7 +559,7 @@ const defaultState = {
 
 const params = new URLSearchParams(location.search);
 const budgetId = params.get("budget") || "sean-budget";
-const isAdmin = params.get("admin") === "1";
+const isAdmin = params.get("admin") === "1" || budgetId === "sean-budget";
 
 let state = loadLocalState();
 let editingSpendId = null;
