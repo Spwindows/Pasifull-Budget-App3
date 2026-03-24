@@ -78,7 +78,7 @@
       <div id="syncBox" class="notice sync">Connecting…</div>
     </div>
 
-    <div id="installCard" class="card">
+    <div id="installCard" class="card hidden">
       <h2>Install BudgetFlow</h2>
       <div class="small">Add it to your phone so it opens like an app.</div>
       <div class="row" style="margin-top:12px">
@@ -704,8 +704,12 @@ function closeModal(){
   $("coupleModal").classList.add("hidden");
 }
 
-function showInstallCard(){
+function showInstallCard(force = false){
+  const dismissed = localStorage.getItem("installCardDismissed-" + budgetId);
+  if(dismissed && !force) return;
+
   $("installCard").classList.remove("hidden");
+
   if(deferredPrompt){
     $("installNowBtn").textContent = "Install App";
     $("hideInstallCardBtn").textContent = "Not now";
@@ -717,6 +721,7 @@ function showInstallCard(){
 
 function hideInstallCard(){
   $("installCard").classList.add("hidden");
+  localStorage.setItem("installCardDismissed-" + budgetId, "true");
 }
 
 async function ensureRemoteRow(){
@@ -826,10 +831,14 @@ $("installNowBtn").addEventListener("click", async () => {
     return;
   }
   deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
+  const choice = await deferredPrompt.userChoice;
   deferredPrompt = null;
-  hideInstallCard();
   $("installBtn").classList.add("hidden");
+
+  if(choice && choice.outcome === "accepted"){
+    localStorage.setItem("installCardDismissed-" + budgetId, "true");
+    $("installCard").classList.add("hidden");
+  }
 });
 
 $("hideInstallCardBtn").addEventListener("click", hideInstallCard);
@@ -875,7 +884,7 @@ window.addEventListener("beforeinstallprompt", e => {
   e.preventDefault();
   deferredPrompt = e;
   $("installBtn").classList.remove("hidden");
-  showInstallCard();
+  showInstallCard(true);
 });
 
 $("installBtn").addEventListener("click", async () => {
@@ -900,7 +909,7 @@ $("spendDate").value = todayISO();
 state = normaliseState(state);
 renderAll();
 showSetupIfNeeded();
-showInstallCard();
+showInstallCard(false);
 ensureRemoteRow();
 setInterval(pullRemote, 4000);
 </script>
