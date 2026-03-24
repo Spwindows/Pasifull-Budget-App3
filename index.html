@@ -436,6 +436,19 @@
       </div>
 
       <div style="margin-top:10px">
+        <div class="label">Bills come out day</div>
+        <select id="billsDueDay">
+          <option value="0">Sunday</option>
+          <option value="1">Monday</option>
+          <option value="2">Tuesday</option>
+          <option value="3">Wednesday</option>
+          <option value="4">Thursday</option>
+          <option value="5">Friday</option>
+          <option value="6">Saturday</option>
+        </select>
+      </div>
+
+      <div style="margin-top:10px">
         <div class="label">Shared budget ID</div>
         <input id="budgetIdInput" class="mono" type="text" readonly />
       </div>
@@ -528,6 +541,7 @@ const defaultState = {
   lastPay:"",
   nextPay:"",
   lastAutoRollDate:"",
+  billsDueDay:"4",
   bills:[
     {id:1,name:"Rent / Mortgage",amount:"",frequency:"weekly"},
     {id:2,name:"Electricity",amount:"",frequency:"monthly"}
@@ -628,6 +642,7 @@ function normaliseState(raw){
   merged.lastPay = merged.lastPay || "";
   merged.nextPay = merged.nextPay || "";
   merged.lastAutoRollDate = merged.lastAutoRollDate || "";
+  merged.billsDueDay = String(raw?.billsDueDay ?? merged.billsDueDay ?? "4");
 
   merged.bills = Array.isArray(merged.bills) ? merged.bills.map((b, i) => ({
     id: b?.id || Date.now()+i,
@@ -706,6 +721,12 @@ function spendTotal(){
   return state.spends.reduce((sum,s) => sum + num(s.amount), 0);
 }
 
+function areBillsDueYet(){
+  const billsDay = Number(state.billsDueDay || 4);
+  const now = today();
+  return now.getDay() >= billsDay;
+}
+
 function summary(){
   const carry = num(state.carryBalance);
   const income = num(state.income);
@@ -721,9 +742,10 @@ function summary(){
   const goalProgress = savingsGoal > 0 ? Math.min((savingsBalance / savingsGoal) * 100, 100) : 0;
 
   const plannedAvailable = carry + income - bills - weeklySavingsTarget - fun - spent;
+  const billsToHoldNow = areBillsDueYet() ? bills : 0;
 
   const liveAvailable = bankBalance > 0
-    ? bankBalance - savingsBalance - weeklySavingsTarget - bills - fun - spent
+    ? bankBalance - savingsBalance - weeklySavingsTarget - billsToHoldNow - fun - spent
     : plannedAvailable;
 
   const d = daysUntil(state.nextPay);
@@ -734,6 +756,7 @@ function summary(){
     carry,
     income,
     bills,
+    billsToHoldNow,
     weeklySavingsTarget,
     savingsBalance,
     savingsGoal,
@@ -760,7 +783,7 @@ function yearTotals(){
 
 function statusText(s){
   if(s.liveAvailable < 0) return ["dangerBox","Overspending alert — you're below zero."];
-  if(s.liveAvailable < (s.bills * 0.25)) return ["warnBox","Budget is getting tight."];
+  if(s.liveAvailable < (s.billsToHoldNow * 0.25)) return ["warnBox","Budget is getting tight."];
   return ["ok","You are on track."];
 }
 
@@ -929,6 +952,7 @@ function renderSettings(){
   $("funTarget").value = state.funTarget === "0" ? "" : state.funTarget;
   $("lastPay").value = state.lastPay;
   $("nextPay").value = state.nextPay;
+  $("billsDueDay").value = state.billsDueDay;
   $("budgetIdInput").value = budgetId;
 }
 
@@ -1283,7 +1307,6 @@ $("currentBalance").addEventListener("input", e => { state.currentBalance = e.ta
 $("savingsGoal").addEventListener("input", e => { state.savingsGoal = e.target.value; stateChanged(); renderTop(); });
 $("savingsBalance").addEventListener("input", e => { state.savingsBalance = e.target.value; stateChanged(); renderTop(); });
 $("weeklySavingsTarget").addEventListener("input", e => { state.weeklySavingsTarget = e.target.value; stateChanged(); renderTop(); renderHistory(); });
-
 $("funTarget").addEventListener("input", e => { state.funTarget = e.target.value; stateChanged(); renderTop(); });
 
 $("lastPay").addEventListener("change", e => {
@@ -1298,6 +1321,12 @@ $("nextPay").addEventListener("change", e => {
   state.nextPay = e.target.value;
   deriveLastPay();
   $("lastPay").value = state.lastPay;
+  stateChanged();
+  renderTop();
+});
+
+$("billsDueDay").addEventListener("change", e => {
+  state.billsDueDay = e.target.value;
   stateChanged();
   renderTop();
 });
