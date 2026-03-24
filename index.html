@@ -455,7 +455,7 @@
 
       <div class="row" style="margin-top:10px">
         <button id="copyLinkBtn" class="secondary">Copy Shared Link</button>
-        <button id="createCoupleBtn" class="warn">Create New Couple</button>
+        <button id="createCoupleBtn" class="warn hidden">Create New Couple</button>
       </div>
 
       <div class="row" style="margin-top:10px">
@@ -551,7 +551,7 @@ const defaultState = {
 };
 
 const params = new URLSearchParams(location.search);
-const budgetId = params.get("budget") || "sean-budget";
+const isAdmin = params.get("admin") === "1";
 
 let state = loadLocalState();
 let editingSpendId = null;
@@ -960,6 +960,13 @@ function renderSettings(){
 }
 
 function renderAll(){
+  function applyAdminMode(){
+  if(isAdmin){
+    $("createCoupleBtn").classList.remove("hidden");
+  } else {
+    $("createCoupleBtn").classList.add("hidden");
+  }
+}
   renderLogo();
   renderPeopleSelect();
   renderTop();
@@ -1161,6 +1168,13 @@ function generateBudgetId(){
 }
 
 function createNewCouple(){
+  if(!isAdmin) return;
+
+  const newId = generateBudgetId();
+  const newUrl = location.origin + location.pathname + "?budget=" + newId;
+  $("newCoupleLink").textContent = newUrl;
+  $("coupleModal").classList.remove("hidden");
+}
   const newId = generateBudgetId();
   const newUrl = location.origin + location.pathname + "?budget=" + newId;
   $("newCoupleLink").textContent = newUrl;
@@ -1417,6 +1431,7 @@ $("spendDate").value = todayISO();
 state = normaliseState(state);
 checkAutoRollover();
 renderAll();
+applyAdminMode();
 showSetupIfNeeded();
 showInstallCard(false);
 ensureRemoteRow();
