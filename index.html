@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1043,16 +1044,21 @@ function renderBills(){
     `;
 
     div.querySelectorAll("[data-field]").forEach(el => {
-      const handler = e => {
-        state.bills[idx][e.target.dataset.field] = e.target.value;
-        stateChanged();
-        renderBills();
-        renderTop();
-      };
-      if(el.tagName==="SELECT") el.addEventListener("change", handler);
-      else el.addEventListener("input", handler);
-      if(el.type === "date") el.addEventListener("change", handler);
+  if (el.tagName === "SELECT" || el.type === "date") {
+    el.addEventListener("change", e => {
+      state.bills[idx][e.target.dataset.field] = e.target.value;
+      stateChanged();
+      renderBills();
+      renderTop();
     });
+  } else {
+    el.addEventListener("input", e => {
+      state.bills[idx][e.target.dataset.field] = e.target.value;
+      stateChanged();
+      renderTop();
+    });
+  }
+});
 
     div.querySelector(".del-bill").addEventListener("click", () => {
       state.bills.splice(idx,1);
