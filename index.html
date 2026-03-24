@@ -207,7 +207,7 @@
     </div>
 
     <div class="card">
-      <div class="label">Available now</div>
+      <div class="label">Protected spend now</div>
       <div id="availableNow" class="big">$0.00</div>
 
       <div class="grid2" style="margin-top:12px">
@@ -223,11 +223,11 @@
 
       <div class="grid2" style="margin-top:10px">
         <div class="stat">
-          <div class="label">Spent this week</div>
+          <div class="label">Spent this cycle</div>
           <div id="weekSpent" class="value">$0.00</div>
         </div>
         <div class="stat">
-          <div class="label">Weekly bills</div>
+          <div class="label">Bills before next pay</div>
           <div id="weeklyBills" class="value">$0.00</div>
         </div>
       </div>
@@ -259,10 +259,14 @@
     <div class="card">
       <h2>Quick Summary</h2>
       <div class="summaryRow"><span>Balance brought forward</span><strong id="sumCarry">$0.00</strong></div>
-      <div class="summaryRow"><span>This week's income</span><strong id="sumIncome">$0.00</strong></div>
+      <div class="summaryRow"><span>Current cycle income</span><strong id="sumIncome">$0.00</strong></div>
+      <div class="summaryRow"><span>Next pay amount</span><strong id="sumNextPayAmount">$0.00</strong></div>
+      <div class="summaryRow"><span>Following pay amount</span><strong id="sumFollowingPayAmount">$0.00</strong></div>
+      <div class="summaryRow"><span>Bills before following pay</span><strong id="sumNextCycleBills">$0.00</strong></div>
       <div class="summaryRow"><span>Weekly savings amount</span><strong id="sumSavingsTarget">$0.00</strong></div>
       <div class="summaryRow"><span>Fun target</span><strong id="sumFun">$0.00</strong></div>
-      <div class="summaryRow"><span>Forecast to payday</span><strong id="sumForecast">$0.00</strong></div>
+      <div class="summaryRow"><span>Current-cycle only available</span><strong id="sumCurrentOnly">$0.00</strong></div>
+      <div class="summaryRow"><span>2-cycle protected forecast</span><strong id="sumForecast">$0.00</strong></div>
     </div>
   </section>
 
@@ -386,19 +390,30 @@
           <input id="carryBalance" type="number" min="0" placeholder="0" />
         </div>
         <div>
-          <div class="label">Weekly income</div>
+          <div class="label">Current cycle income</div>
           <input id="income" type="number" min="0" placeholder="0" />
         </div>
       </div>
 
       <div class="row" style="margin-top:10px">
         <div>
-          <div class="label">Expected weekly income</div>
+          <div class="label">Expected default pay</div>
           <input id="expectedIncome" type="number" min="0" placeholder="0" />
         </div>
         <div>
           <div class="label">Current bank balance</div>
           <input id="currentBalance" type="number" min="0" placeholder="Optional" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <div>
+          <div class="label">Next pay amount</div>
+          <input id="nextPayAmount" type="number" min="0" placeholder="Optional" />
+        </div>
+        <div>
+          <div class="label">Following pay amount</div>
+          <input id="followingPayAmount" type="number" min="0" placeholder="Optional" />
         </div>
       </div>
 
@@ -426,7 +441,7 @@
 
       <div class="row" style="margin-top:10px">
         <div>
-          <div class="label">Pay day / cycle anchor</div>
+          <div class="label">Last pay date</div>
           <input id="lastPay" type="date" />
         </div>
         <div>
@@ -436,16 +451,8 @@
       </div>
 
       <div style="margin-top:10px">
-        <div class="label">Bills come out day</div>
-        <select id="billsDueDay">
-          <option value="0">Sunday</option>
-          <option value="1">Monday</option>
-          <option value="2">Tuesday</option>
-          <option value="3">Wednesday</option>
-          <option value="4">Thursday</option>
-          <option value="5">Friday</option>
-          <option value="6">Saturday</option>
-        </select>
+        <div class="label">Following pay date</div>
+        <input id="followingPayDatePreview" class="mono" type="text" readonly />
       </div>
 
       <div style="margin-top:10px">
@@ -486,13 +493,13 @@
     <p class="small">Takes 30 seconds</p>
 
     <div id="setupStep1">
-      <div class="label">Weekly income</div>
+      <div class="label">Current cycle income</div>
       <input id="setupIncome" type="number" placeholder="e.g. 1500" />
       <button id="toStep2" class="success" style="margin-top:10px">Next</button>
     </div>
 
     <div id="setupStep2" class="hidden">
-      <div class="label">Weekly bills (optional)</div>
+      <div class="label">Bills amount (optional quick start)</div>
       <input id="setupBills" type="number" placeholder="e.g. 500" />
       <button id="toStep3" class="success" style="margin-top:10px">Next</button>
     </div>
@@ -523,7 +530,6 @@
 const SUPABASE_URL = "https://smtgoefvimzevawzpodn.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_U07TGXYwm82AnjJQ2CuPog_2CDn9iqO";
 const TABLE_NAME = "shared_budgets";
-const frequencies = {weekly:1, fortnightly:1/2, monthly:12/52, quarterly:4/52, yearly:1/52};
 
 const defaultState = {
   appName:"BudgetFlow Shared",
@@ -534,6 +540,8 @@ const defaultState = {
   income:"",
   expectedIncome:"",
   currentBalance:"",
+  nextPayAmount:"",
+  followingPayAmount:"",
   savingsGoal:"",
   savingsBalance:"",
   weeklySavingsTarget:"",
@@ -541,10 +549,9 @@ const defaultState = {
   lastPay:"",
   nextPay:"",
   lastAutoRollDate:"",
-  billsDueDay:"4",
   bills:[
-    {id:1,name:"Rent / Mortgage",amount:"",frequency:"weekly"},
-    {id:2,name:"Electricity",amount:"",frequency:"monthly"}
+    {id:1,name:"Rent / Mortgage",amount:"",frequency:"weekly",dueDate:""},
+    {id:2,name:"Electricity",amount:"",frequency:"monthly",dueDate:""}
   ],
   spends:[],
   history:[]
@@ -571,15 +578,21 @@ function today(){
   d.setHours(0,0,0,0);
   return d;
 }
-function todayISO(){ return formatDate(today()); }
 function formatDate(d){
   const local = new Date(d);
   local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
   return local.toISOString().split("T")[0];
 }
+function todayISO(){ return formatDate(today()); }
 function parseISO(dateStr){
   if(!dateStr) return null;
   const d = new Date(dateStr + "T00:00:00");
+  d.setHours(0,0,0,0);
+  return d;
+}
+function addDays(date, days){
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
   d.setHours(0,0,0,0);
   return d;
 }
@@ -587,13 +600,38 @@ function esc(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&l
 function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
 function money(n){ return new Intl.NumberFormat("en-AU",{style:"currency",currency:"AUD",maximumFractionDigits:2}).format(Number.isFinite(n) ? n : 0); }
 
+function followingPayDate(){
+  if(!state.nextPay) return null;
+  const next = parseISO(state.nextPay);
+  if(!next) return null;
+  return addDays(next, 7);
+}
+
+function followingPayDateISO(){
+  const d = followingPayDate();
+  return d ? formatDate(d) : "";
+}
+
+function currentCycleIncomeValue(){
+  return num(state.income);
+}
+function nextPayAmountValue(){
+  return num(state.nextPayAmount) || num(state.expectedIncome) || 0;
+}
+function followingPayAmountValue(){
+  return num(state.followingPayAmount) || num(state.expectedIncome) || 0;
+}
+
 function showSetupIfNeeded(){
   if(localStorage.getItem("setupDone-" + budgetId)) return;
   $("setupScreen").classList.remove("hidden");
 }
 
 function finishSetup(){
-  state.income = $("setupIncome").value || "0";
+  const setupIncome = $("setupIncome").value || "0";
+  state.income = setupIncome;
+  if(!num(state.expectedIncome)) state.expectedIncome = setupIncome;
+  if(!num(state.nextPayAmount)) state.nextPayAmount = setupIncome;
   state.weeklySavingsTarget = $("setupSavings").value || "0";
 
   const bills = $("setupBills").value;
@@ -602,7 +640,8 @@ function finishSetup(){
       id: Date.now(),
       name: "General Bills",
       amount: bills,
-      frequency: "weekly"
+      frequency: "weekly",
+      dueDate: state.nextPay || ""
     }];
   }
 
@@ -637,6 +676,8 @@ function normaliseState(raw){
   merged.income = String(num(merged.income));
   merged.expectedIncome = String(num(merged.expectedIncome));
   merged.currentBalance = merged.currentBalance === "" ? "" : String(num(merged.currentBalance));
+  merged.nextPayAmount = String(num(merged.nextPayAmount));
+  merged.followingPayAmount = String(num(merged.followingPayAmount));
   merged.savingsGoal = String(num(merged.savingsGoal));
   merged.savingsBalance = String(num(merged.savingsBalance));
   merged.weeklySavingsTarget = String(num(merged.weeklySavingsTarget));
@@ -644,13 +685,13 @@ function normaliseState(raw){
   merged.lastPay = merged.lastPay || "";
   merged.nextPay = merged.nextPay || "";
   merged.lastAutoRollDate = merged.lastAutoRollDate || "";
-  merged.billsDueDay = String(raw?.billsDueDay ?? merged.billsDueDay ?? "4");
 
   merged.bills = Array.isArray(merged.bills) ? merged.bills.map((b, i) => ({
     id: b?.id || Date.now()+i,
     name: b?.name || "",
     amount: String(num(b?.amount)),
-    frequency: ["weekly","fortnightly","monthly","quarterly","yearly"].includes(b?.frequency) ? b.frequency : "weekly"
+    frequency: ["weekly","fortnightly","monthly","quarterly","yearly"].includes(b?.frequency) ? b.frequency : "weekly",
+    dueDate: b?.dueDate || ""
   })) : clone(defaultState.bills);
 
   merged.spends = Array.isArray(merged.spends) ? merged.spends.filter(Boolean).map((s, i) => ({
@@ -715,29 +756,108 @@ function deriveLastPay(){
   state.lastPay = formatDate(d);
 }
 
-function weeklyBillsTotal(){
-  return state.bills.reduce((sum,b) => sum + num(b.amount) * (frequencies[b.frequency] || 0), 0);
-}
-
 function spendTotal(){
   return state.spends.reduce((sum,s) => sum + num(s.amount), 0);
 }
 
-function areBillsDueYet(){
-  const billsDay = Number(state.billsDueDay || 4);
-  const now = today();
-  return now.getDay() >= billsDay;
+function incrementDateByFrequency(date, frequency){
+  const d = new Date(date);
+  if(frequency === "weekly") d.setDate(d.getDate() + 7);
+  else if(frequency === "fortnightly") d.setDate(d.getDate() + 14);
+  else if(frequency === "monthly") d.setMonth(d.getMonth() + 1);
+  else if(frequency === "quarterly") d.setMonth(d.getMonth() + 3);
+  else if(frequency === "yearly") d.setFullYear(d.getFullYear() + 1);
+  else return null;
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function billOccurrencesInRange(bill, startDate, endDate){
+  if(!bill.dueDate) return [];
+  let due = parseISO(bill.dueDate);
+  if(!due) return [];
+
+  const occurrences = [];
+  let guard = 0;
+
+  while(due < startDate && guard < 400){
+    due = incrementDateByFrequency(due, bill.frequency);
+    guard++;
+    if(!due) return occurrences;
+  }
+
+  while(due && due <= endDate && guard < 800){
+    if(due >= startDate) occurrences.push(new Date(due));
+    due = incrementDateByFrequency(due, bill.frequency);
+    guard++;
+  }
+
+  return occurrences;
+}
+
+function billsTotalInRange(startDate, endDate){
+  if(!startDate || !endDate) return 0;
+  return state.bills.reduce((sum, bill) => {
+    const count = billOccurrencesInRange(bill, startDate, endDate).length;
+    return sum + (num(bill.amount) * count);
+  }, 0);
+}
+
+function upcomingBillsListForRange(startDate, endDate){
+  if(!startDate || !endDate) return [];
+  const out = [];
+  state.bills.forEach(bill => {
+    const occurrences = billOccurrencesInRange(bill, startDate, endDate);
+    occurrences.forEach(due => {
+      out.push({
+        id: `${bill.id}-${formatDate(due)}`,
+        billId: bill.id,
+        name: bill.name,
+        amount: num(bill.amount),
+        dueDate: formatDate(due)
+      });
+    });
+  });
+  return out.sort((a,b) => parseISO(a.dueDate) - parseISO(b.dueDate));
+}
+
+function currentCycleRange(){
+  const start = today();
+  const end = parseISO(state.nextPay);
+  return {start, end};
+}
+
+function nextCycleRange(){
+  const next = parseISO(state.nextPay);
+  const following = followingPayDate();
+  if(!next || !following) return {start:null,end:null};
+  return {start:addDays(next, 1), end:following};
+}
+
+function currentBillsTotal(){
+  const r = currentCycleRange();
+  return billsTotalInRange(r.start, r.end);
+}
+
+function nextCycleBillsTotal(){
+  const r = nextCycleRange();
+  return billsTotalInRange(r.start, r.end);
 }
 
 function getSpendPotBase(){
   if(num(state.currentBalance) > 0) return num(state.currentBalance);
-  return num(state.carryBalance) + num(state.income);
+  return num(state.carryBalance) + currentCycleIncomeValue();
 }
 
 function summary(){
   const carry = num(state.carryBalance);
-  const income = num(state.income);
-  const bills = weeklyBillsTotal();
+  const currentIncome = currentCycleIncomeValue();
+  const nextIncome = nextPayAmountValue();
+  const followingIncome = followingPayAmountValue();
+
+  const billsCurrent = currentBillsTotal();
+  const billsNext = nextCycleBillsTotal();
+
   const weeklySavingsTarget = num(state.weeklySavingsTarget);
   const savingsBalance = num(state.savingsBalance);
   const savingsGoal = num(state.savingsGoal);
@@ -747,20 +867,25 @@ function summary(){
   const remainingGoal = Math.max(savingsGoal - savingsBalance, 0);
   const goalProgress = savingsGoal > 0 ? Math.min((savingsBalance / savingsGoal) * 100, 100) : 0;
 
-  const billsToHoldNow = areBillsDueYet() ? bills : 0;
   const spendPotBase = getSpendPotBase();
 
-  const liveAvailable = spendPotBase - weeklySavingsTarget - billsToHoldNow - fun - spent;
+  const currentCycleAvailable = spendPotBase - billsCurrent - weeklySavingsTarget - fun - spent;
+
+  const twoCycleResources = spendPotBase + nextIncome;
+  const twoCycleObligations = billsCurrent + billsNext + (weeklySavingsTarget * 2) + (fun * 2) + spent;
+  const protectedSpendNow = Math.min(currentCycleAvailable, twoCycleResources - twoCycleObligations);
 
   const d = daysUntil(state.nextPay);
   const daysLeft = d === null ? 7 : Math.max(d, 1);
-  const dailyAvailable = liveAvailable / daysLeft;
+  const dailyAvailable = protectedSpendNow / daysLeft;
 
   return {
     carry,
-    income,
-    bills,
-    billsToHoldNow,
+    currentIncome,
+    nextIncome,
+    followingIncome,
+    billsCurrent,
+    billsNext,
     weeklySavingsTarget,
     savingsBalance,
     savingsGoal,
@@ -769,10 +894,11 @@ function summary(){
     fun,
     spent,
     spendPotBase,
-    liveAvailable,
+    currentCycleAvailable,
+    protectedSpendNow,
     dailyAvailable,
     days:d,
-    forecast:liveAvailable
+    forecast:twoCycleResources - twoCycleObligations
   };
 }
 
@@ -787,8 +913,8 @@ function yearTotals(){
 }
 
 function statusText(s){
-  if(s.liveAvailable < 0) return ["dangerBox","Overspending alert — you're below zero."];
-  if(s.liveAvailable < (s.billsToHoldNow * 0.25)) return ["warnBox","Budget is getting tight."];
+  if(s.protectedSpendNow < 0) return ["dangerBox","Overspending alert — next cycle is under pressure."];
+  if(s.protectedSpendNow < (s.billsCurrent * 0.25) && s.billsCurrent > 0) return ["warnBox","Keep it tight — bills are coming up."];
   return ["ok","You are on track."];
 }
 
@@ -797,16 +923,20 @@ function renderTop(){
   const st = statusText(s);
 
   $("heroTitle").textContent = state.appName || "BudgetFlow Shared";
-  $("availableNow").textContent = money(s.liveAvailable);
+  $("availableNow").textContent = money(s.protectedSpendNow);
   $("safeToday").textContent = money(s.dailyAvailable);
   $("daysToPay").textContent = s.days === null ? "—" : s.days + "d";
   $("weekSpent").textContent = money(s.spent);
-  $("weeklyBills").textContent = money(s.bills);
+  $("weeklyBills").textContent = money(s.billsCurrent);
 
   $("sumCarry").textContent = money(s.carry);
-  $("sumIncome").textContent = money(s.income);
+  $("sumIncome").textContent = money(s.currentIncome);
+  $("sumNextPayAmount").textContent = money(s.nextIncome);
+  $("sumFollowingPayAmount").textContent = money(s.followingIncome);
+  $("sumNextCycleBills").textContent = money(s.billsNext);
   $("sumSavingsTarget").textContent = money(s.weeklySavingsTarget);
   $("sumFun").textContent = money(s.fun);
+  $("sumCurrentOnly").textContent = money(s.currentCycleAvailable);
   $("sumForecast").textContent = money(s.forecast);
 
   $("sumSavingsGoal").textContent = money(s.savingsGoal);
@@ -868,7 +998,13 @@ function renderBills(){
   const holder = $("billList");
   holder.innerHTML = "";
 
+  const currentRange = currentCycleRange();
+  const currentItems = upcomingBillsListForRange(currentRange.start, currentRange.end);
+  const currentBillIds = new Set(currentItems.map(i => i.billId));
+
   state.bills.forEach((bill, idx) => {
+    const currentDue = currentItems.find(i => i.billId === bill.id);
+
     const div = document.createElement("div");
     div.className = "item";
     div.innerHTML = `
@@ -882,30 +1018,40 @@ function renderBills(){
           <input data-field="amount" type="number" value="${esc(bill.amount)}" placeholder="0">
         </div>
       </div>
+
       <div class="row" style="margin-top:10px">
         <div>
           <div class="label">Frequency</div>
           <select data-field="frequency">
-            ${Object.keys(frequencies).map(f => `<option value="${f}" ${bill.frequency===f?"selected":""}>${cap(f)}</option>`).join("")}
+            ${["weekly","fortnightly","monthly","quarterly","yearly"].map(f => `<option value="${f}" ${bill.frequency===f?"selected":""}>${cap(f)}</option>`).join("")}
           </select>
         </div>
-        <div style="max-width:120px">
-          <div class="label">&nbsp;</div>
-          <button class="danger del-bill">Delete</button>
+        <div>
+          <div class="label">Due date</div>
+          <input data-field="dueDate" type="date" value="${esc(bill.dueDate || "")}">
         </div>
       </div>
-      <div class="small" style="margin-top:8px">Weekly equivalent: ${money(num(bill.amount) * (frequencies[bill.frequency] || 0))}</div>
+
+      <div class="row" style="margin-top:10px">
+        <div class="small">${currentBillIds.has(bill.id) ? `Next due before pay: ${esc(currentDue.dueDate)}` : "Not due before next pay"}</div>
+        <div class="small" style="text-align:right">${money(num(bill.amount))}</div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button class="danger del-bill">Delete</button>
+      </div>
     `;
 
     div.querySelectorAll("[data-field]").forEach(el => {
       const handler = e => {
         state.bills[idx][e.target.dataset.field] = e.target.value;
         stateChanged();
-        if(e.target.tagName==="SELECT") renderBills();
+        renderBills();
         renderTop();
       };
       if(el.tagName==="SELECT") el.addEventListener("change", handler);
       else el.addEventListener("input", handler);
+      if(el.type === "date") el.addEventListener("change", handler);
     });
 
     div.querySelector(".del-bill").addEventListener("click", () => {
@@ -953,13 +1099,15 @@ function renderSettings(){
   $("income").value = state.income === "0" ? "" : state.income;
   $("expectedIncome").value = state.expectedIncome === "0" ? "" : state.expectedIncome;
   $("currentBalance").value = state.currentBalance === "0" ? "" : state.currentBalance;
+  $("nextPayAmount").value = state.nextPayAmount === "0" ? "" : state.nextPayAmount;
+  $("followingPayAmount").value = state.followingPayAmount === "0" ? "" : state.followingPayAmount;
   $("savingsGoal").value = state.savingsGoal === "0" ? "" : state.savingsGoal;
   $("savingsBalance").value = state.savingsBalance === "0" ? "" : state.savingsBalance;
   $("weeklySavingsTarget").value = state.weeklySavingsTarget === "0" ? "" : state.weeklySavingsTarget;
   $("funTarget").value = state.funTarget === "0" ? "" : state.funTarget;
   $("lastPay").value = state.lastPay;
   $("nextPay").value = state.nextPay;
-  $("billsDueDay").value = state.billsDueDay;
+  $("followingPayDatePreview").value = followingPayDateISO() || "—";
   $("budgetIdInput").value = budgetId;
 }
 
@@ -1048,8 +1196,8 @@ function doWeeklyRoll(forced = false){
 
   const s = summary();
   const saveWanted = num(state.weeklySavingsTarget);
-  const saveActual = Math.min(saveWanted, Math.max(s.liveAvailable, 0));
-  const leftAfterSave = Math.max(s.liveAvailable - saveActual, 0);
+  const saveActual = Math.min(saveWanted, Math.max(s.currentCycleAvailable, 0));
+  const leftAfterSave = Math.max(s.currentCycleAvailable - saveActual, 0);
 
   state.history.push({
     id: Date.now(),
@@ -1057,7 +1205,7 @@ function doWeeklyRoll(forced = false){
     weekStart: state.lastPay || todayISO(),
     weekEnd: state.nextPay || todayISO(),
     carry: String(num(state.carryBalance)),
-    income: String(num(state.income)),
+    income: String(currentCycleIncomeValue()),
     savedThisWeek: String(saveActual),
     spent: String(num(s.spent)),
     left: String(leftAfterSave)
@@ -1067,15 +1215,13 @@ function doWeeklyRoll(forced = false){
   state.carryBalance = String(leftAfterSave);
   state.currentBalance = "";
   state.spends = [];
-  state.income = state.expectedIncome || state.income;
 
-  const newLastPay = new Date(nextPay);
-  const newNextPay = new Date(nextPay);
-  newNextPay.setDate(newNextPay.getDate() + 7);
-
-  state.lastPay = formatDate(newLastPay);
-  state.nextPay = formatDate(newNextPay);
-  state.lastAutoRollDate = formatDate(newLastPay);
+  state.income = String(nextPayAmountValue());
+  state.lastPay = formatDate(nextPay);
+  state.nextPay = followingPayDateISO();
+  state.nextPayAmount = String(followingPayAmountValue());
+  state.followingPayAmount = "";
+  state.lastAutoRollDate = formatDate(nextPay);
 
   stateChanged();
   renderAll();
@@ -1092,11 +1238,11 @@ function checkAutoRollover(){
     if(!changed) break;
     rolled = true;
   }
-  if(rolled) setSyncStatus("New pay week started automatically.");
+  if(rolled) setSyncStatus("New pay cycle started automatically.");
 }
 
 function startNewWeekManual(){
-  if(!confirm("Start the next pay week now? This will archive the current week, move this week's savings, clear spends, and roll to the next pay cycle.")) return;
+  if(!confirm("Start the next pay cycle now? This archives the current cycle, moves savings, clears spends, and rolls forward to the next pay.")) return;
   doWeeklyRoll(true);
 }
 
@@ -1108,8 +1254,8 @@ function addToSavings(){
   const amount = num(input);
   if(amount <= 0) return;
 
-  const availableSpending = Math.max(getSpendPotBase() - spendTotal(), 0);
-  const actual = Math.min(amount, availableSpending);
+  const currentCashNow = Math.max(getSpendPotBase() - spendTotal(), 0);
+  const actual = Math.min(amount, currentCashNow);
 
   if(actual <= 0){
     alert("There is no available spending money to move.");
@@ -1180,7 +1326,6 @@ function generateBudgetId(){
 
 function createNewCouple(){
   if(!isAdmin) return;
-
   const newId = generateBudgetId();
   const newUrl = location.origin + location.pathname + "?budget=" + newId;
   $("newCoupleLink").textContent = newUrl;
@@ -1295,7 +1440,7 @@ $("addSavingsBtn").addEventListener("click", addToSavings);
 $("useSavingsBtn").addEventListener("click", useSavings);
 
 $("addBillBtn").addEventListener("click", () => {
-  state.bills.push({id:Date.now(), name:"", amount:"", frequency:"weekly"});
+  state.bills.push({id:Date.now(), name:"", amount:"", frequency:"weekly", dueDate:""});
   stateChanged();
   renderBills();
 });
@@ -1353,8 +1498,11 @@ $("person2Name").addEventListener("input", e => { state.person2Name = e.target.v
 
 $("carryBalance").addEventListener("input", e => { state.carryBalance = e.target.value; stateChanged(); renderTop(); renderHistory(); });
 $("income").addEventListener("input", e => { state.income = e.target.value; stateChanged(); renderTop(); });
-$("expectedIncome").addEventListener("input", e => { state.expectedIncome = e.target.value; stateChanged(); });
+$("expectedIncome").addEventListener("input", e => { state.expectedIncome = e.target.value; stateChanged(); renderTop(); });
 $("currentBalance").addEventListener("input", e => { state.currentBalance = e.target.value; stateChanged(); renderTop(); });
+
+$("nextPayAmount").addEventListener("input", e => { state.nextPayAmount = e.target.value; stateChanged(); renderTop(); });
+$("followingPayAmount").addEventListener("input", e => { state.followingPayAmount = e.target.value; stateChanged(); renderTop(); });
 
 $("savingsGoal").addEventListener("input", e => { state.savingsGoal = e.target.value; stateChanged(); renderTop(); });
 $("savingsBalance").addEventListener("input", e => { state.savingsBalance = e.target.value; stateChanged(); renderTop(); });
@@ -1366,7 +1514,8 @@ $("lastPay").addEventListener("change", e => {
   deriveNextPay();
   $("nextPay").value = state.nextPay;
   stateChanged();
-  renderTop();
+  renderAll();
+  applyAdminMode();
 });
 
 $("nextPay").addEventListener("change", e => {
@@ -1374,13 +1523,8 @@ $("nextPay").addEventListener("change", e => {
   deriveLastPay();
   $("lastPay").value = state.lastPay;
   stateChanged();
-  renderTop();
-});
-
-$("billsDueDay").addEventListener("change", e => {
-  state.billsDueDay = e.target.value;
-  stateChanged();
-  renderTop();
+  renderAll();
+  applyAdminMode();
 });
 
 $("logoUpload").addEventListener("change", e => {
