@@ -745,8 +745,8 @@ function summary(){
   const billsToHoldNow = areBillsDueYet() ? bills : 0;
 
   const liveAvailable = bankBalance > 0
-    ? bankBalance - savingsBalance - weeklySavingsTarget - billsToHoldNow - fun - spent
-    : plannedAvailable;
+  ? bankBalance - weeklySavingsTarget - billsToHoldNow - fun - spent
+  : plannedAvailable;
 
   const d = daysUntil(state.nextPay);
   const daysLeft = d === null ? 7 : Math.max(d, 1);
