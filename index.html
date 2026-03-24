@@ -66,53 +66,58 @@
 
 <div class="app">
   <section id="page-home">
-    <div class="hero">
-      <div class="logoRow">
-        <div id="logoBox" class="logo">💸</div>
-        <div>
-          <div class="title" id="heroTitle">BudgetFlow Shared</div>
-          <div class="sub">Shared link version for both phones</div>
-        </div>
-      </div>
-      <div id="statusBox" class="notice ok">You are on track.</div>
-      <div id="syncBox" class="notice sync">Connecting…</div>
-    </div>
+  <section id="page-home">
 
-    <div id="installCard" class="card hidden">
-      <h2>Install BudgetFlow</h2>
-      <div class="small">Add it to your phone so it opens like an app.</div>
-      <div class="row" style="margin-top:12px">
-        <button id="installNowBtn" class="success">Install App</button>
-        <button id="hideInstallCardBtn" class="secondary">Not now</button>
+  <div class="hero">
+    <div class="logoRow">
+      <div id="logoBox" class="logo">💸</div>
+      <div>
+        <div class="title" id="heroTitle">BudgetFlow Shared</div>
+        <div class="sub">Shared link version for both phones</div>
       </div>
     </div>
+    <div id="statusBox" class="notice ok">You are on track.</div>
+    <div id="syncBox" class="notice sync">Connecting…</div>
+  </div>
 
-    <div class="card">
-      <div class="label">Available now</div>
-      <div id="availableNow" class="big">$0.00</div>
-      <div class="grid2" style="margin-top:12px">
-        <div class="stat"><div class="label">Safe today</div><div id="safeToday" class="value">$0.00</div></div>
-        <div class="stat"><div class="label">Next pay</div><div id="daysToPay" class="value">—</div></div>
+  <div class="card">
+    <div class="label">Available now</div>
+    <div id="availableNow" class="big">$0.00</div>
+
+    <div class="grid2" style="margin-top:12px">
+      <div class="stat">
+        <div class="label">Daily available spend</div>
+        <div id="safeToday" class="value">$0.00</div>
       </div>
-      <div class="grid2" style="margin-top:10px">
-        <div class="stat"><div class="label">Spent this week</div><div id="weekSpent" class="value">$0.00</div></div>
-        <div class="stat"><div class="label">Weekly bills</div><div id="weeklyBills" class="value">$0.00</div></div>
-      </div>
-      <div class="row" style="margin-top:12px">
-        <button id="goSpendsBtn" class="success">Add Spend</button>
-        <button id="startWeekBtn" class="warn">Start New Week</button>
+
+      <div class="stat">
+        <div class="label">Next pay</div>
+        <div id="daysToPay" class="value">—</div>
       </div>
     </div>
 
-    <div class="card">
-      <h2>Quick Summary</h2>
-      <div class="summaryRow"><span>Balance brought forward</span><strong id="sumCarry">$0.00</strong></div>
-      <div class="summaryRow"><span>This week's income</span><strong id="sumIncome">$0.00</strong></div>
-      <div class="summaryRow"><span>Savings target</span><strong id="sumSavings">$0.00</strong></div>
-      <div class="summaryRow"><span>Fun target</span><strong id="sumFun">$0.00</strong></div>
-      <div class="summaryRow"><span>Forecast to payday</span><strong id="sumForecast">$0.00</strong></div>
+    <div class="grid2" style="margin-top:10px">
+      <div class="stat">
+        <div class="label">Spent this week</div>
+        <div id="weekSpent" class="value">$0.00</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">Weekly bills</div>
+        <div id="weeklyBills" class="value">$0.00</div>
+      </div>
     </div>
-  </section>
+
+    <div class="row" style="margin-top:12px">
+      <button id="goSpendsBtn" class="success">Add Spend</button>
+      <button id="startWeekBtn" class="warn">Start New Week</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Quick Summary</h2>
+    <div class="summaryRow"><span>Balance brought forward</span><strong id="sumCarry">$0.00</strong></div>
+    <div class
 
   <section id="page-spends" class="hidden">
     <div class="card">
