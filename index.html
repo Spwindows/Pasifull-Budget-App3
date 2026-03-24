@@ -727,6 +727,11 @@ function areBillsDueYet(){
   return now.getDay() >= billsDay;
 }
 
+function getSpendPotBase(){
+  if(num(state.currentBalance) > 0) return num(state.currentBalance);
+  return num(state.carryBalance) + num(state.income);
+}
+
 function summary(){
   const carry = num(state.carryBalance);
   const income = num(state.income);
@@ -736,17 +741,14 @@ function summary(){
   const savingsGoal = num(state.savingsGoal);
   const fun = num(state.funTarget);
   const spent = spendTotal();
-  const bankBalance = num(state.currentBalance);
 
   const remainingGoal = Math.max(savingsGoal - savingsBalance, 0);
   const goalProgress = savingsGoal > 0 ? Math.min((savingsBalance / savingsGoal) * 100, 100) : 0;
 
-  const plannedAvailable = carry + income - bills - weeklySavingsTarget - fun - spent;
   const billsToHoldNow = areBillsDueYet() ? bills : 0;
+  const spendPotBase = getSpendPotBase();
 
-  const liveAvailable = bankBalance > 0
-  ? bankBalance - weeklySavingsTarget - billsToHoldNow - fun - spent
-  : plannedAvailable;
+  const liveAvailable = spendPotBase - weeklySavingsTarget - billsToHoldNow - fun - spent;
 
   const d = daysUntil(state.nextPay);
   const daysLeft = d === null ? 7 : Math.max(d, 1);
@@ -764,6 +766,7 @@ function summary(){
     goalProgress,
     fun,
     spent,
+    spendPotBase,
     liveAvailable,
     dailyAvailable,
     days:d,
@@ -1083,27 +1086,54 @@ function startNewWeekManual(){
 
 function addToSavings(){
   const suggested = num(state.weeklySavingsTarget) || 0;
-  const input = prompt("How much do you want to add to savings?", suggested ? String(suggested) : "");
+  const input = prompt("How much do you want to move from spending into savings?", suggested ? String(suggested) : "");
   if(input === null) return;
+
   const amount = num(input);
   if(amount <= 0) return;
 
-  state.savingsBalance = String(num(state.savingsBalance) + amount);
+  const availableSpending = Math.max(getSpendPotBase() - spendTotal(), 0);
+  const actual = Math.min(amount, availableSpending);
+
+  if(actual <= 0){
+    alert("There is no available spending money to move.");
+    return;
+  }
+
+  if(num(state.currentBalance) > 0){
+    state.currentBalance = String(num(state.currentBalance) - actual);
+  } else {
+    state.carryBalance = String(num(state.carryBalance) - actual);
+  }
+
+  state.savingsBalance = String(num(state.savingsBalance) + actual);
+
   stateChanged();
   renderAll();
 }
 
 function useSavings(){
-  const input = prompt("How much do you want to move back out of savings?");
+  const input = prompt("How much do you want to move from savings back into spending?");
   if(input === null) return;
+
   const amount = num(input);
   if(amount <= 0) return;
 
   const currentSaved = num(state.savingsBalance);
   const actual = Math.min(amount, currentSaved);
 
+  if(actual <= 0){
+    alert("There is no savings available to move.");
+    return;
+  }
+
   state.savingsBalance = String(currentSaved - actual);
-  state.carryBalance = String(num(state.carryBalance) + actual);
+
+  if(num(state.currentBalance) > 0){
+    state.currentBalance = String(num(state.currentBalance) + actual);
+  } else {
+    state.carryBalance = String(num(state.carryBalance) + actual);
+  }
 
   stateChanged();
   renderAll();
