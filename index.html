@@ -289,6 +289,20 @@
   <section id="page-spends" class="hidden">
     <div class="card">
       <h2>Add Spend</h2>
+      <div class="label" style="margin-bottom:8px">Quick add</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+  <button type="button" class="secondary quickAddBtn" data-name="Groceries" data-category="Groceries">Groceries</button>
+  <button type="button" class="secondary quickAddBtn" data-name="Fuel" data-category="Fuel">Fuel</button>
+  <button type="button" class="secondary quickAddBtn" data-name="Eating Out" data-category="Eating Out">Eating Out</button>
+  <button type="button" class="secondary quickAddBtn" data-name="Kids" data-category="Kids">Kids</button>
+</div>
+      <div class="label" style="margin-bottom:8px">Quick add</div>
+<div class="row" style="margin-bottom:10px;flex-wrap:wrap">
+  <button type="button" class="secondary quickAddBtn" data-name="Groceries" data-category="Groceries">Groceries</button>
+  <button type="button" class="secondary quickAddBtn" data-name="Fuel" data-category="Fuel">Fuel</button>
+  <button type="button" class="secondary quickAddBtn" data-name="Eating Out" data-category="Eating Out">Eating Out</button>
+  <button type="button" class="secondary quickAddBtn" data-name="Kids" data-category="Kids">Kids</button>
+</div>
       <div class="row">
         <div>
           <div class="label">Item</div>
@@ -1272,7 +1286,16 @@ function switchPage(name){
   });
   document.querySelectorAll(".tab").forEach(btn => btn.classList.toggle("active", btn.dataset.page === name));
 }
-
+function bindQuickAddButtons(){
+  document.querySelectorAll(".quickAddBtn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      $("spendName").value = btn.dataset.name || "";
+      $("spendCategory").value = btn.dataset.category || "General";
+      if(!$("spendDate").value) $("spendDate").value = todayISO();
+      $("spendAmount").focus();
+    });
+  });
+}
 function clearSpendForm(){
   editingSpendId = null;
   $("spendName").value = "";
@@ -1729,6 +1752,7 @@ $("spendDate").value = todayISO();
 state = normaliseState(state);
 checkAutoRollover();
 renderAll();
+bindQuickAddButtons();
 applyAdminMode();
 showSetupIfNeeded();
 showInstallCard(false);
