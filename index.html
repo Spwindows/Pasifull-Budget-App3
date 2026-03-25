@@ -289,20 +289,15 @@
   <section id="page-spends" class="hidden">
     <div class="card">
       <h2>Add Spend</h2>
+
       <div class="label" style="margin-bottom:8px">Quick add</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-  <button type="button" class="secondary quickAddBtn" data-name="Groceries" data-category="Groceries">Groceries</button>
-  <button type="button" class="secondary quickAddBtn" data-name="Fuel" data-category="Fuel">Fuel</button>
-  <button type="button" class="secondary quickAddBtn" data-name="Eating Out" data-category="Eating Out">Eating Out</button>
-  <button type="button" class="secondary quickAddBtn" data-name="Kids" data-category="Kids">Kids</button>
-</div>
-      <div class="label" style="margin-bottom:8px">Quick add</div>
-<div class="row" style="margin-bottom:10px;flex-wrap:wrap">
-  <button type="button" class="secondary quickAddBtn" data-name="Groceries" data-category="Groceries">Groceries</button>
-  <button type="button" class="secondary quickAddBtn" data-name="Fuel" data-category="Fuel">Fuel</button>
-  <button type="button" class="secondary quickAddBtn" data-name="Eating Out" data-category="Eating Out">Eating Out</button>
-  <button type="button" class="secondary quickAddBtn" data-name="Kids" data-category="Kids">Kids</button>
-</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <button type="button" class="secondary quickAddBtn" data-name="Groceries" data-category="Groceries">Groceries</button>
+        <button type="button" class="secondary quickAddBtn" data-name="Fuel" data-category="Fuel">Fuel</button>
+        <button type="button" class="secondary quickAddBtn" data-name="Eating Out" data-category="Eating Out">Eating Out</button>
+        <button type="button" class="secondary quickAddBtn" data-name="Kids" data-category="Kids">Kids</button>
+      </div>
+
       <div class="row">
         <div>
           <div class="label">Item</div>
@@ -725,6 +720,21 @@ function renderPeopleSelect(){
   else select.value = "Joint";
 }
 
+function saveSpendPrefs(){
+  localStorage.setItem("budgetflow-last-category-" + budgetId, $("spendCategory").value || "General");
+  localStorage.setItem("budgetflow-last-person-" + budgetId, $("spendPerson").value || "Joint");
+}
+
+function loadSpendPrefs(){
+  const lastCategory = localStorage.getItem("budgetflow-last-category-" + budgetId);
+  const lastPerson = localStorage.getItem("budgetflow-last-person-" + budgetId);
+
+  if(lastCategory) $("spendCategory").value = lastCategory;
+  if(lastPerson && [...$("spendPerson").options].some(o => o.value === lastPerson)){
+    $("spendPerson").value = lastPerson;
+  }
+}
+
 function normaliseState(raw){
   const merged = {...clone(defaultState), ...(raw || {})};
 
@@ -904,7 +914,7 @@ function nextCycleBillsTotal(){
 }
 
 function getSpendPotBase(){
-  if(num(state.currentBalance) > 0) return num(state.currentBalance);
+  if(state.currentBalance !== "") return num(state.currentBalance);
   return num(state.carryBalance) + currentCycleIncomeValue();
 }
 
@@ -957,7 +967,7 @@ function summary(){
     currentCycleAvailable - protectedSpendNow
   );
 
-  const bankBalanceNow = num(state.currentBalance) > 0
+  const bankBalanceNow = state.currentBalance !== ""
     ? num(state.currentBalance)
     : spendPotBase;
 
@@ -1286,16 +1296,23 @@ function switchPage(name){
   });
   document.querySelectorAll(".tab").forEach(btn => btn.classList.toggle("active", btn.dataset.page === name));
 }
+
 function bindQuickAddButtons(){
   document.querySelectorAll(".quickAddBtn").forEach(btn => {
+    if(btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
+
     btn.addEventListener("click", () => {
       $("spendName").value = btn.dataset.name || "";
+      $("spendCategory").value = btn.dataset.category || "General";
+      loadSpendPrefs();
       $("spendCategory").value = btn.dataset.category || "General";
       if(!$("spendDate").value) $("spendDate").value = todayISO();
       $("spendAmount").focus();
     });
   });
 }
+
 function clearSpendForm(){
   editingSpendId = null;
   $("spendName").value = "";
@@ -1303,6 +1320,7 @@ function clearSpendForm(){
   $("spendCategory").value = "General";
   $("spendPerson").value = "Joint";
   $("spendDate").value = todayISO();
+  loadSpendPrefs();
   $("cancelEditBtn").classList.add("hidden");
 }
 
@@ -1334,6 +1352,7 @@ function saveSpend(){
   if(editingSpendId) state.spends = state.spends.map(x => x.id === editingSpendId ? spend : x);
   else state.spends.push(spend);
 
+  saveSpendPrefs();
   stateChanged();
   clearSpendForm();
   renderAll();
@@ -1420,7 +1439,7 @@ function addToSavings(){
     return;
   }
 
-  if(num(state.currentBalance) > 0){
+  if(state.currentBalance !== ""){
     state.currentBalance = String(num(state.currentBalance) - actual);
   } else {
     state.carryBalance = String(num(state.carryBalance) - actual);
@@ -1450,7 +1469,7 @@ function useSavings(){
 
   state.savingsBalance = String(currentSaved - actual);
 
-  if(num(state.currentBalance) > 0){
+  if(state.currentBalance !== ""){
     state.currentBalance = String(num(state.currentBalance) + actual);
   } else {
     state.carryBalance = String(num(state.carryBalance) + actual);
@@ -1588,8 +1607,17 @@ async function pullRemote(){
 }
 
 document.querySelectorAll(".tab").forEach(btn => btn.addEventListener("click", () => switchPage(btn.dataset.page)));
-$("goSpendsBtn").addEventListener("click", () => switchPage("spends"));
-$("fabBtn").addEventListener("click", () => switchPage("spends"));
+
+$("goSpendsBtn").addEventListener("click", () => {
+  switchPage("spends");
+  setTimeout(() => $("spendName").focus(), 50);
+});
+
+$("fabBtn").addEventListener("click", () => {
+  switchPage("spends");
+  setTimeout(() => $("spendName").focus(), 50);
+});
+
 $("saveSpendBtn").addEventListener("click", saveSpend);
 $("cancelEditBtn").addEventListener("click", clearSpendForm);
 $("startWeekBtn").addEventListener("click", startNewWeekManual);
@@ -1753,6 +1781,7 @@ state = normaliseState(state);
 checkAutoRollover();
 renderAll();
 bindQuickAddButtons();
+clearSpendForm();
 applyAdminMode();
 showSetupIfNeeded();
 showInstallCard(false);
