@@ -248,6 +248,14 @@
 
     <div class="card">
       <div class="between">
+        <h2>Upcoming Bills</h2>
+        <span id="upcomingBillsCount" class="pill">0 bills</span>
+      </div>
+      <div id="upcomingBillsList"></div>
+    </div>
+
+    <div class="card">
+      <div class="between">
         <h2>Savings Goal</h2>
         <span id="goalProgressPill" class="pill">0%</span>
       </div>
@@ -913,7 +921,10 @@ function summary(){
     - fun
     - spent;
 
-  const twoCycleResources = spendPotBase + nextIncome;
+  const twoCycleResources =
+    spendPotBase
+    + nextIncome;
+
   const twoCycleObligations =
     billsCurrent
     + billsNext
@@ -1033,6 +1044,45 @@ function renderLogo(){
   else box.textContent = "💸";
 }
 
+function renderUpcomingBills(){
+  const holder = $("upcomingBillsList");
+  const count = $("upcomingBillsCount");
+
+  if(!holder || !count) return;
+
+  const currentRange = currentCycleRange();
+  const items = upcomingBillsListForRange(currentRange.start, currentRange.end);
+
+  count.textContent = items.length + (items.length === 1 ? " bill" : " bills");
+
+  if(!items.length){
+    holder.innerHTML = '<div class="small">No bills due before next pay.</div>';
+    return;
+  }
+
+  holder.innerHTML = items.map(item => {
+    const due = parseISO(item.dueDate);
+    const days = due ? Math.ceil((due - today()) / 86400000) : null;
+    let dueText = `Due ${item.dueDate}`;
+
+    if(days === 0) dueText = "Due today";
+    else if(days === 1) dueText = "Due tomorrow";
+    else if(days > 1) dueText = `Due in ${days} days`;
+
+    return `
+      <div class="item">
+        <div class="between">
+          <div>
+            <div style="font-weight:700">${esc(item.name || "Bill")}</div>
+            <div class="small">${esc(dueText)}</div>
+          </div>
+          <div style="font-weight:700">${money(num(item.amount))}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
 function renderSpends(){
   $("spendCount").textContent = state.spends.length + (state.spends.length === 1 ? " item" : " items");
   const holder = $("spendList");
@@ -1125,12 +1175,14 @@ function renderBills(){
           stateChanged();
           renderBills();
           renderTop();
+          renderUpcomingBills();
         });
       } else {
         el.addEventListener("input", e => {
           state.bills[idx][e.target.dataset.field] = e.target.value;
           stateChanged();
           renderTop();
+          renderUpcomingBills();
         });
       }
     });
@@ -1197,6 +1249,7 @@ function renderAll(){
   renderLogo();
   renderPeopleSelect();
   renderTop();
+  renderUpcomingBills();
   renderSpends();
   renderBills();
   renderHistory();
