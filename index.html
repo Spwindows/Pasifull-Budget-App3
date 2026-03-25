@@ -207,7 +207,7 @@
     </div>
 
     <div class="card">
-      <div class="label">Protected spend now</div>
+      <div class="label">Safe to spend now</div>
       <div id="availableNow" class="big">$0.00</div>
 
       <div class="grid2" style="margin-top:12px">
@@ -234,8 +234,16 @@
 
       <div class="row" style="margin-top:12px">
         <button id="goSpendsBtn" class="success">Add Spend</button>
-        <button id="startWeekBtn" class="warn">Start New Week</button>
+        <button id="startWeekBtn" class="warn">Start New Cycle</button>
       </div>
+    </div>
+
+    <div class="card">
+      <h2>Locked Money</h2>
+      <div class="summaryRow"><span>Bank balance</span><strong id="sumBankBalance">$0.00</strong></div>
+      <div class="summaryRow"><span>Locked for current bills</span><strong id="sumLockedBills">$0.00</strong></div>
+      <div class="summaryRow"><span>Locked for next cycle gap</span><strong id="sumLockedNext">$0.00</strong></div>
+      <div class="summaryRow"><span>Safe to spend now</span><strong id="sumSafeSpend">$0.00</strong></div>
     </div>
 
     <div class="card">
@@ -439,6 +447,15 @@
         </div>
       </div>
 
+      <div style="margin-top:10px">
+        <div class="label">Pay frequency</div>
+        <select id="payFrequency">
+          <option value="weekly">Weekly</option>
+          <option value="fortnightly">Fortnightly</option>
+          <option value="fourweekly">4 Weekly</option>
+        </select>
+      </div>
+
       <div class="row" style="margin-top:10px">
         <div>
           <div class="label">Last pay date</div>
@@ -531,6 +548,12 @@ const SUPABASE_URL = "https://smtgoefvimzevawzpodn.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_U07TGXYwm82AnjJQ2CuPog_2CDn9iqO";
 const TABLE_NAME = "shared_budgets";
 
+const payFrequencies = {
+  weekly: 7,
+  fortnightly: 14,
+  fourweekly: 28
+};
+
 const defaultState = {
   appName:"BudgetFlow Shared",
   logo:"",
@@ -548,6 +571,7 @@ const defaultState = {
   funTarget:"",
   lastPay:"",
   nextPay:"",
+  payFrequency:"weekly",
   lastAutoRollDate:"",
   bills:[
     {id:1,name:"Rent / Mortgage",amount:"",frequency:"weekly",dueDate:""},
@@ -600,16 +624,30 @@ function esc(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&l
 function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
 function money(n){ return new Intl.NumberFormat("en-AU",{style:"currency",currency:"AUD",maximumFractionDigits:2}).format(Number.isFinite(n) ? n : 0); }
 
+function payFrequencyDays(){
+  return payFrequencies[state.payFrequency] || 7;
+}
+
 function followingPayDate(){
   if(!state.nextPay) return null;
   const next = parseISO(state.nextPay);
   if(!next) return null;
-  return addDays(next, 7);
+  return addDays(next, payFrequencyDays());
 }
 
 function followingPayDateISO(){
   const d = followingPayDate();
   return d ? formatDate(d) : "";
+}
+
+function recalcPayDates(){
+  if(state.lastPay){
+    const last = parseISO(state.lastPay);
+    state.nextPay = formatDate(addDays(last, payFrequencyDays()));
+  } else if(state.nextPay){
+    const next = parseISO(state.nextPay);
+    state.lastPay = formatDate(addDays(next, -payFrequencyDays()));
+  }
 }
 
 function currentCycleIncomeValue(){
@@ -684,6 +722,7 @@ function normaliseState(raw){
   merged.funTarget = String(num(merged.funTarget));
   merged.lastPay = merged.lastPay || "";
   merged.nextPay = merged.nextPay || "";
+  merged.payFrequency = ["weekly","fortnightly","fourweekly"].includes(merged.payFrequency) ? merged.payFrequency : "weekly";
   merged.lastAutoRollDate = merged.lastAutoRollDate || "";
 
   merged.bills = Array.isArray(merged.bills) ? merged.bills.map((b, i) => ({
@@ -744,15 +783,13 @@ function daysUntil(dateStr){
 
 function deriveNextPay(){
   if(!state.lastPay) return;
-  const d = parseISO(state.lastPay);
-  d.setDate(d.getDate() + 7);
+  const d = addDays(parseISO(state.lastPay), payFrequencyDays());
   state.nextPay = formatDate(d);
 }
 
 function deriveLastPay(){
   if(!state.nextPay) return;
-  const d = parseISO(state.nextPay);
-  d.setDate(d.getDate() - 7);
+  const d = addDays(parseISO(state.nextPay), -payFrequencyDays());
   state.lastPay = formatDate(d);
 }
 
@@ -869,14 +906,38 @@ function summary(){
 
   const spendPotBase = getSpendPotBase();
 
-  const currentCycleAvailable = spendPotBase - billsCurrent - weeklySavingsTarget - fun - spent;
+  const currentCycleAvailable =
+    spendPotBase
+    - billsCurrent
+    - weeklySavingsTarget
+    - fun
+    - spent;
 
   const twoCycleResources = spendPotBase + nextIncome;
-  const twoCycleObligations = billsCurrent + billsNext + (weeklySavingsTarget * 2) + (fun * 2) + spent;
-  const protectedSpendNow = Math.min(currentCycleAvailable, twoCycleResources - twoCycleObligations);
+  const twoCycleObligations =
+    billsCurrent
+    + billsNext
+    + (weeklySavingsTarget * 2)
+    + (fun * 2)
+    + spent;
+
+  const protectedSpendNow = Math.min(
+    currentCycleAvailable,
+    twoCycleResources - twoCycleObligations
+  );
+
+  const lockedForCurrentBills = billsCurrent;
+  const lockedForNextCycleGap = Math.max(
+    0,
+    currentCycleAvailable - protectedSpendNow
+  );
+
+  const bankBalanceNow = num(state.currentBalance) > 0
+    ? num(state.currentBalance)
+    : spendPotBase;
 
   const d = daysUntil(state.nextPay);
-  const daysLeft = d === null ? 7 : Math.max(d, 1);
+  const daysLeft = d === null ? Math.max(payFrequencyDays(), 1) : Math.max(d, 1);
   const dailyAvailable = protectedSpendNow / daysLeft;
 
   return {
@@ -894,8 +955,11 @@ function summary(){
     fun,
     spent,
     spendPotBase,
+    bankBalanceNow,
     currentCycleAvailable,
     protectedSpendNow,
+    lockedForCurrentBills,
+    lockedForNextCycleGap,
     dailyAvailable,
     days:d,
     forecast:twoCycleResources - twoCycleObligations
@@ -913,8 +977,15 @@ function yearTotals(){
 }
 
 function statusText(s){
-  if(s.protectedSpendNow < 0) return ["dangerBox","Overspending alert — next cycle is under pressure."];
-  if(s.protectedSpendNow < (s.billsCurrent * 0.25) && s.billsCurrent > 0) return ["warnBox","Keep it tight — bills are coming up."];
+  if(s.protectedSpendNow < 0){
+    return ["dangerBox", `Overspending alert — hold back ${money(Math.abs(s.protectedSpendNow))} to stay safe.`];
+  }
+  if(s.lockedForNextCycleGap > 0){
+    return ["warnBox", `Hold back ${money(s.lockedForNextCycleGap)} now to protect the next cycle.`];
+  }
+  if(s.billsCurrent > 0){
+    return ["ok", "You’re safe, and current bills are covered."];
+  }
   return ["ok","You are on track."];
 }
 
@@ -938,6 +1009,11 @@ function renderTop(){
   $("sumFun").textContent = money(s.fun);
   $("sumCurrentOnly").textContent = money(s.currentCycleAvailable);
   $("sumForecast").textContent = money(s.forecast);
+
+  $("sumBankBalance").textContent = money(s.bankBalanceNow);
+  $("sumLockedBills").textContent = money(s.lockedForCurrentBills);
+  $("sumLockedNext").textContent = money(s.lockedForNextCycleGap);
+  $("sumSafeSpend").textContent = money(s.protectedSpendNow);
 
   $("sumSavingsGoal").textContent = money(s.savingsGoal);
   $("sumSavingsBalance").textContent = money(s.savingsBalance);
@@ -1043,21 +1119,21 @@ function renderBills(){
     `;
 
     div.querySelectorAll("[data-field]").forEach(el => {
-  if (el.tagName === "SELECT" || el.type === "date") {
-    el.addEventListener("change", e => {
-      state.bills[idx][e.target.dataset.field] = e.target.value;
-      stateChanged();
-      renderBills();
-      renderTop();
+      if (el.tagName === "SELECT" || el.type === "date") {
+        el.addEventListener("change", e => {
+          state.bills[idx][e.target.dataset.field] = e.target.value;
+          stateChanged();
+          renderBills();
+          renderTop();
+        });
+      } else {
+        el.addEventListener("input", e => {
+          state.bills[idx][e.target.dataset.field] = e.target.value;
+          stateChanged();
+          renderTop();
+        });
+      }
     });
-  } else {
-    el.addEventListener("input", e => {
-      state.bills[idx][e.target.dataset.field] = e.target.value;
-      stateChanged();
-      renderTop();
-    });
-  }
-});
 
     div.querySelector(".del-bill").addEventListener("click", () => {
       state.bills.splice(idx,1);
@@ -1112,6 +1188,7 @@ function renderSettings(){
   $("funTarget").value = state.funTarget === "0" ? "" : state.funTarget;
   $("lastPay").value = state.lastPay;
   $("nextPay").value = state.nextPay;
+  $("payFrequency").value = state.payFrequency || "weekly";
   $("followingPayDatePreview").value = followingPayDateISO() || "—";
   $("budgetIdInput").value = budgetId;
 }
@@ -1513,6 +1590,14 @@ $("savingsGoal").addEventListener("input", e => { state.savingsGoal = e.target.v
 $("savingsBalance").addEventListener("input", e => { state.savingsBalance = e.target.value; stateChanged(); renderTop(); });
 $("weeklySavingsTarget").addEventListener("input", e => { state.weeklySavingsTarget = e.target.value; stateChanged(); renderTop(); renderHistory(); });
 $("funTarget").addEventListener("input", e => { state.funTarget = e.target.value; stateChanged(); renderTop(); });
+
+$("payFrequency").addEventListener("change", e => {
+  state.payFrequency = e.target.value;
+  recalcPayDates();
+  stateChanged();
+  renderAll();
+  applyAdminMode();
+});
 
 $("lastPay").addEventListener("change", e => {
   state.lastPay = e.target.value;
