@@ -42,11 +42,23 @@
     .card{padding:16px}
     .logoRow{display:flex;gap:12px;align-items:center}
     .logo{
-      width:54px;height:54px;border-radius:16px;
-      background:rgba(255,255,255,.08);
-      display:flex;align-items:center;justify-content:center;
-      font-size:28px;overflow:hidden
-    }
+  width:54px;
+  height:54px;
+  border-radius:16px;
+  background:linear-gradient(135deg,#020617,#0f172a);
+  border:1px solid rgba(255,255,255,.08);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  box-shadow:0 8px 20px rgba(0,0,0,.35);
+}
+
+.logo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
     .logo img{width:100%;height:100%;object-fit:cover;background:#fff}
     .title{font-size:24px;font-weight:900}
     .sub{font-size:13px;color:var(--muted);margin-top:4px}
@@ -189,8 +201,8 @@
       <div class="logoRow">
         <div id="logoBox" class="logo">💸</div>
         <div>
-          <div class="title" id="heroTitle">BudgetFlow Shared</div>
-          <div class="sub">Shared link version for both phones</div>
+          <div class="title" id="heroTitle">BudgetFlow</div>
+<div class="sub">Safe shared budgeting made simple</div>
         </div>
       </div>
       <div id="statusBox" class="notice ok">You are on track.</div>
@@ -1064,8 +1076,12 @@ function renderTop(){
 
 function renderLogo(){
   const box = $("logoBox");
-  if(state.logo) box.innerHTML = '<img alt="logo" src="' + state.logo + '">';
-  else box.textContent = "💸";
+
+  if(state.logo){
+    box.innerHTML = '<img alt="BudgetFlow logo" src="' + state.logo + '">';
+  } else {
+    box.innerHTML = '<img src="icon-192.png" alt="BudgetFlow logo">';
+  }
 }
 
 function renderUpcomingBills(){
