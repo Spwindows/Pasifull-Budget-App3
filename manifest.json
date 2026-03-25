@@ -1,9 +1,23 @@
 {
-  "name": "BudgetFlow Shared",
+  "name": "BudgetFlow",
   "short_name": "BudgetFlow",
-  "start_url": "./index.html",
+  "start_url": "./",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
-  "description": "Shared weekly budget with live cloud sync."
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "description": "Safe shared budgeting made simple.",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
