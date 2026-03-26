@@ -191,6 +191,7 @@
     @media (max-width:420px){
       .big{font-size:34px}
       .value{font-size:22px}
+      .grid3{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -245,15 +246,16 @@
         </div>
       </div>
 
-      <div class="row" style="margin-top:12px">
+      <div class="grid3" style="margin-top:12px">
         <button id="goSpendsBtn" class="success">Add Spend</button>
+        <button id="addExtraPayBtn" class="secondary">Add Extra Pay</button>
         <button id="startWeekBtn" class="warn">Start New Cycle</button>
       </div>
     </div>
 
     <div class="card">
       <h2>Locked Money</h2>
-      <div class="summaryRow"><span>Bank balance</span><strong id="sumBankBalance">$0.00</strong></div>
+      <div class="summaryRow"><span>App balance</span><strong id="sumBankBalance">$0.00</strong></div>
       <div class="summaryRow"><span>Locked for current bills</span><strong id="sumLockedBills">$0.00</strong></div>
       <div class="summaryRow"><span>Locked for future bills</span><strong id="sumLockedNext">$0.00</strong></div>
       <div class="summaryRow"><span>Safe to spend now</span><strong id="sumSafeSpend">$0.00</strong></div>
@@ -265,6 +267,14 @@
         <span id="upcomingBillsCount" class="pill">0 bills</span>
       </div>
       <div id="upcomingBillsList"></div>
+    </div>
+
+    <div class="card">
+      <div class="between">
+        <h2>Extra Pay This Cycle</h2>
+        <span id="extraPayCount" class="pill">0 items</span>
+      </div>
+      <div id="extraPayList"></div>
     </div>
 
     <div class="card">
@@ -287,8 +297,9 @@
 
     <div class="card">
       <h2>Quick Summary</h2>
-      <div class="summaryRow"><span>Balance brought forward</span><strong id="sumCarry">$0.00</strong></div>
-      <div class="summaryRow"><span>Current cycle income</span><strong id="sumIncome">$0.00</strong></div>
+      <div class="summaryRow"><span>Carry forward</span><strong id="sumCarry">$0.00</strong></div>
+      <div class="summaryRow"><span>Main pay this cycle</span><strong id="sumIncome">$0.00</strong></div>
+      <div class="summaryRow"><span>Extra pay this cycle</span><strong id="sumExtraIncome">$0.00</strong></div>
       <div class="summaryRow"><span>Next pay amount</span><strong id="sumNextPayAmount">$0.00</strong></div>
       <div class="summaryRow"><span>Following pay amount</span><strong id="sumFollowingPayAmount">$0.00</strong></div>
       <div class="summaryRow"><span>Due-date bills next cycle</span><strong id="sumNextCycleBills">$0.00</strong></div>
@@ -422,25 +433,20 @@
         </div>
       </div>
 
-      <div class="row" style="margin-top:10px">
-        <div>
-          <div class="label">Balance brought forward</div>
-          <input id="carryBalance" type="number" min="0" placeholder="0" />
-        </div>
-        <div>
-          <div class="label">Current cycle income</div>
-          <input id="income" type="number" min="0" placeholder="0" />
-        </div>
+      <div style="margin-top:10px">
+        <div class="label">Opening balance / carry forward</div>
+        <input id="carryBalance" type="number" min="0" placeholder="Enter once to start" />
+        <div class="tiny" style="margin-top:6px">Set this once at the beginning. After that, BudgetFlow runs the balance for you.</div>
       </div>
 
       <div class="row" style="margin-top:10px">
         <div>
-          <div class="label">Expected default pay</div>
-          <input id="expectedIncome" type="number" min="0" placeholder="0" />
+          <div class="label">Main pay this cycle</div>
+          <input id="income" type="number" min="0" placeholder="0" />
         </div>
         <div>
-          <div class="label">Current bank balance</div>
-          <input id="currentBalance" type="number" min="0" placeholder="Optional" />
+          <div class="label">Expected default pay</div>
+          <input id="expectedIncome" type="number" min="0" placeholder="0" />
         </div>
       </div>
 
@@ -550,14 +556,14 @@
     <p class="small">Takes 30 seconds</p>
 
     <div id="setupStep1">
-      <div class="label">Current cycle income</div>
-      <input id="setupIncome" type="number" placeholder="e.g. 1500" />
+      <div class="label">Opening balance</div>
+      <input id="setupCarry" type="number" placeholder="e.g. 1000" />
       <button id="toStep2" class="success" style="margin-top:10px">Next</button>
     </div>
 
     <div id="setupStep2" class="hidden">
-      <div class="label">Bills amount (optional quick start)</div>
-      <input id="setupBills" type="number" placeholder="e.g. 500" />
+      <div class="label">Main pay this cycle</div>
+      <input id="setupIncome" type="number" placeholder="e.g. 1500" />
       <button id="toStep3" class="success" style="margin-top:10px">Next</button>
     </div>
 
@@ -601,8 +607,8 @@ const defaultState = {
   person2Name:"Person 2",
   carryBalance:"",
   income:"",
+  extraPays:[],
   expectedIncome:"",
-  currentBalance:"",
   nextPayAmount:"",
   followingPayAmount:"",
   savingsGoal:"",
@@ -702,8 +708,12 @@ function recalcPayDates(){
   }
 }
 
+function extraPayTotal(){
+  return (state.extraPays || []).reduce((sum,p) => sum + num(p.amount), 0);
+}
+
 function currentCycleIncomeValue(){
-  return num(state.income);
+  return num(state.income) + extraPayTotal();
 }
 function nextPayAmountValue(){
   return num(state.nextPayAmount) || num(state.expectedIncome) || 0;
@@ -718,23 +728,15 @@ function showSetupIfNeeded(){
 }
 
 function finishSetup(){
+  state.carryBalance = $("setupCarry").value || "0";
+
   const setupIncome = $("setupIncome").value || "0";
   state.income = setupIncome;
+
   if(!num(state.expectedIncome)) state.expectedIncome = setupIncome;
   if(!num(state.nextPayAmount)) state.nextPayAmount = setupIncome;
-  state.weeklySavingsTarget = $("setupSavings").value || "0";
 
-  const bills = $("setupBills").value;
-  if(bills && Number(bills) > 0){
-    state.bills = [{
-      id: Date.now(),
-      name: "General Bills",
-      amount: bills,
-      frequency: "weekly",
-      dueDate: state.nextPay || "",
-      fundingMode: "sinking_fund"
-    }];
-  }
+  state.weeklySavingsTarget = $("setupSavings").value || "0";
 
   localStorage.setItem("setupDone-" + budgetId, "true");
   stateChanged();
@@ -782,7 +784,6 @@ function normaliseState(raw){
   merged.carryBalance = String(num(merged.carryBalance));
   merged.income = String(num(merged.income));
   merged.expectedIncome = String(num(merged.expectedIncome));
-  merged.currentBalance = merged.currentBalance === "" ? "" : String(num(merged.currentBalance));
   merged.nextPayAmount = String(num(merged.nextPayAmount));
   merged.followingPayAmount = String(num(merged.followingPayAmount));
   merged.savingsGoal = String(num(merged.savingsGoal));
@@ -794,6 +795,13 @@ function normaliseState(raw){
   merged.payFrequency = ["weekly","fortnightly","fourweekly"].includes(merged.payFrequency) ? merged.payFrequency : "weekly";
   merged.currency = ["AUD","GBP","USD","EUR"].includes(merged.currency) ? merged.currency : "AUD";
   merged.lastAutoRollDate = merged.lastAutoRollDate || "";
+
+  merged.extraPays = Array.isArray(merged.extraPays) ? merged.extraPays.map((p, i) => ({
+    id: p?.id || Date.now()+i,
+    amount: String(num(p?.amount)),
+    note: p?.note || "Extra Pay",
+    date: p?.date || todayISO()
+  })) : [];
 
   merged.bills = Array.isArray(merged.bills) ? merged.bills.map((b, i) => ({
     id: b?.id || Date.now()+i,
@@ -820,6 +828,7 @@ function normaliseState(raw){
     weekEnd: h?.weekEnd || "",
     carry: String(num(h?.carry)),
     income: String(num(h?.income)),
+    extraIncome: String(num(h?.extraIncome)),
     savedThisWeek: String(num(h?.savedThisWeek)),
     spent: String(num(h?.spent)),
     left: String(num(h?.left))
@@ -1009,13 +1018,14 @@ function nextCycleBillsTotal(){
 }
 
 function getSpendPotBase(){
-  if(state.currentBalance !== "") return num(state.currentBalance);
   return num(state.carryBalance) + currentCycleIncomeValue();
 }
 
 function summary(){
   const carry = num(state.carryBalance);
-  const currentIncome = currentCycleIncomeValue();
+  const mainIncome = num(state.income);
+  const extraIncome = extraPayTotal();
+  const currentIncome = mainIncome + extraIncome;
   const nextIncome = nextPayAmountValue();
   const followingIncome = followingPayAmountValue();
 
@@ -1069,9 +1079,7 @@ function summary(){
     currentCycleAvailable - protectedSpendNow
   );
 
-  const bankBalanceNow = state.currentBalance !== ""
-    ? num(state.currentBalance)
-    : spendPotBase;
+  const appBalanceNow = spendPotBase;
 
   const d = daysUntil(state.nextPay);
   const daysLeft = d === null ? Math.max(payFrequencyDays(), 1) : Math.max(d, 1);
@@ -1079,6 +1087,8 @@ function summary(){
 
   return {
     carry,
+    mainIncome,
+    extraIncome,
     currentIncome,
     nextIncome,
     followingIncome,
@@ -1094,7 +1104,7 @@ function summary(){
     fun,
     spent,
     spendPotBase,
-    bankBalanceNow,
+    appBalanceNow,
     currentCycleAvailable,
     protectedSpendNow,
     lockedForCurrentBills,
@@ -1140,7 +1150,8 @@ function renderTop(){
   $("weeklyBills").textContent = money(s.lockedForCurrentBills);
 
   $("sumCarry").textContent = money(s.carry);
-  $("sumIncome").textContent = money(s.currentIncome);
+  $("sumIncome").textContent = money(s.mainIncome);
+  $("sumExtraIncome").textContent = money(s.extraIncome);
   $("sumNextPayAmount").textContent = money(s.nextIncome);
   $("sumFollowingPayAmount").textContent = money(s.followingIncome);
   $("sumNextCycleBills").textContent = money(s.billsNext + s.reserveNext);
@@ -1149,7 +1160,7 @@ function renderTop(){
   $("sumCurrentOnly").textContent = money(s.currentCycleAvailable);
   $("sumForecast").textContent = money(s.forecast);
 
-  $("sumBankBalance").textContent = money(s.bankBalanceNow);
+  $("sumBankBalance").textContent = money(s.appBalanceNow);
   $("sumLockedBills").textContent = money(s.lockedForCurrentBills);
   $("sumLockedNext").textContent = money(s.lockedForNextCycleGap);
   $("sumSafeSpend").textContent = money(s.protectedSpendNow);
@@ -1168,7 +1179,6 @@ function renderTop(){
 
 function renderLogo(){
   const box = $("logoBox");
-
   if(state.logo){
     box.innerHTML = '<img alt="BudgetFlow logo" src="' + state.logo + '">';
   } else {
@@ -1213,6 +1223,44 @@ function renderUpcomingBills(){
       </div>
     `;
   }).join("");
+}
+
+function renderExtraPays(){
+  const holder = $("extraPayList");
+  const count = $("extraPayCount");
+
+  count.textContent = state.extraPays.length + (state.extraPays.length === 1 ? " item" : " items");
+
+  if(!state.extraPays.length){
+    holder.innerHTML = '<div class="small">No extra pay added this cycle.</div>';
+    return;
+  }
+
+  holder.innerHTML = "";
+  state.extraPays.slice().reverse().forEach(pay => {
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `
+      <div class="between">
+        <div>
+          <div style="font-weight:700">${esc(pay.note || "Extra Pay")}</div>
+          <div class="small">${esc(pay.date || "")}</div>
+        </div>
+        <div style="font-weight:700">${money(num(pay.amount))}</div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="danger del-extra-btn">Delete</button>
+      </div>
+    `;
+    div.querySelector(".del-extra-btn").addEventListener("click", () => {
+      state.extraPays = state.extraPays.filter(x => x.id !== pay.id);
+      stateChanged();
+      renderAll();
+      clearSpendForm();
+      applyAdminMode();
+    });
+    holder.appendChild(div);
+  });
 }
 
 function renderSpends(){
@@ -1262,7 +1310,6 @@ function renderBills(){
   const currentBillIds = new Set(currentItems.map(i => i.billId));
 
   state.bills.forEach((bill, idx) => {
-    const currentDue = currentItems.find(i => i.billId === bill.id);
     const reserveNow = sinkingContributionForBill(bill, today());
     const nextDue = nextOccurrenceOnOrAfter(bill, today());
 
@@ -1360,7 +1407,7 @@ function renderHistory(){
     div.innerHTML = `
       <div style="font-weight:700">${esc(h.label || h.weekStart)}</div>
       <div class="small" style="margin-top:6px">
-        B/F ${money(num(h.carry))} • Income ${money(num(h.income))} • Saved ${money(num(h.savedThisWeek))} • Spent ${money(num(h.spent))}
+        Carry ${money(num(h.carry))} • Main pay ${money(num(h.income))} • Extra pay ${money(num(h.extraIncome))} • Saved ${money(num(h.savedThisWeek))} • Spent ${money(num(h.spent))}
       </div>
       <div class="small" style="margin-top:4px">Left: ${money(num(h.left))}</div>
     `;
@@ -1375,7 +1422,6 @@ function renderSettings(){
   $("carryBalance").value = state.carryBalance === "0" ? "" : state.carryBalance;
   $("income").value = state.income === "0" ? "" : state.income;
   $("expectedIncome").value = state.expectedIncome === "0" ? "" : state.expectedIncome;
-  $("currentBalance").value = state.currentBalance === "0" ? "" : state.currentBalance;
   $("nextPayAmount").value = state.nextPayAmount === "0" ? "" : state.nextPayAmount;
   $("followingPayAmount").value = state.followingPayAmount === "0" ? "" : state.followingPayAmount;
   $("savingsGoal").value = state.savingsGoal === "0" ? "" : state.savingsGoal;
@@ -1395,6 +1441,7 @@ function renderAll(){
   renderPeopleSelect();
   renderTop();
   renderUpcomingBills();
+  renderExtraPays();
   renderSpends();
   renderBills();
   renderHistory();
@@ -1479,6 +1526,29 @@ function saveSpend(){
   applyAdminMode();
 }
 
+function addExtraPay(){
+  const amountInput = prompt("Enter extra pay amount");
+  if(amountInput === null) return;
+
+  const amount = num(amountInput);
+  if(amount <= 0) return;
+
+  const noteInput = prompt("Optional note for this extra pay", "Extra Pay");
+  const note = (noteInput === null || !noteInput.trim()) ? "Extra Pay" : noteInput.trim();
+
+  state.extraPays.push({
+    id: Date.now(),
+    amount: String(amount),
+    note,
+    date: todayISO()
+  });
+
+  stateChanged();
+  renderAll();
+  clearSpendForm();
+  applyAdminMode();
+}
+
 function doWeeklyRoll(forced = false){
   const nextPay = parseISO(state.nextPay);
   if(!nextPay) return false;
@@ -1502,7 +1572,8 @@ function doWeeklyRoll(forced = false){
     weekStart: state.lastPay || todayISO(),
     weekEnd: state.nextPay || todayISO(),
     carry: String(num(state.carryBalance)),
-    income: String(currentCycleIncomeValue()),
+    income: String(num(state.income)),
+    extraIncome: String(extraPayTotal()),
     savedThisWeek: String(saveActual),
     spent: String(num(s.spent)),
     left: String(leftAfterSave)
@@ -1510,8 +1581,8 @@ function doWeeklyRoll(forced = false){
 
   state.savingsBalance = String(num(state.savingsBalance) + saveActual);
   state.carryBalance = String(leftAfterSave);
-  state.currentBalance = "";
   state.spends = [];
+  state.extraPays = [];
 
   state.income = String(nextPayAmountValue());
   state.lastPay = formatDate(nextPay);
@@ -1540,7 +1611,7 @@ function checkAutoRollover(){
 }
 
 function startNewWeekManual(){
-  if(!confirm("Start the next pay cycle now? This archives the current cycle, moves savings, clears spends, and rolls forward to the next pay.")) return;
+  if(!confirm("Start the next pay cycle now? This archives the current cycle, moves savings, clears spends, clears extra pay, and rolls forward to the next pay.")) return;
   doWeeklyRoll(true);
 }
 
@@ -1560,12 +1631,7 @@ function addToSavings(){
     return;
   }
 
-  if(state.currentBalance !== ""){
-    state.currentBalance = String(num(state.currentBalance) - actual);
-  } else {
-    state.carryBalance = String(num(state.carryBalance) - actual);
-  }
-
+  state.carryBalance = String(num(state.carryBalance) - actual);
   state.savingsBalance = String(num(state.savingsBalance) + actual);
 
   stateChanged();
@@ -1590,12 +1656,7 @@ function useSavings(){
   }
 
   state.savingsBalance = String(currentSaved - actual);
-
-  if(state.currentBalance !== ""){
-    state.currentBalance = String(num(state.currentBalance) + actual);
-  } else {
-    state.carryBalance = String(num(state.carryBalance) + actual);
-  }
+  state.carryBalance = String(num(state.carryBalance) + actual);
 
   stateChanged();
   renderAll();
@@ -1604,8 +1665,8 @@ function useSavings(){
 }
 
 function exportCsv(){
-  const rows = [["Cycle Start","Cycle End","Carry Forward","Income","Saved This Cycle","Spent","Left"]];
-  state.history.forEach(h => rows.push([h.weekStart,h.weekEnd,h.carry,h.income,h.savedThisWeek,h.spent,h.left]));
+  const rows = [["Cycle Start","Cycle End","Carry Forward","Main Pay","Extra Pay","Saved This Cycle","Spent","Left"]];
+  state.history.forEach(h => rows.push([h.weekStart,h.weekEnd,h.carry,h.income,h.extraIncome,h.savedThisWeek,h.spent,h.left]));
   const csv = rows.map(r => r.map(c => '"' + String(c ?? "").replaceAll('"','""') + '"').join(",")).join("\n");
   const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
   const url = URL.createObjectURL(blob);
@@ -1743,6 +1804,7 @@ $("fabBtn").addEventListener("click", () => {
   setTimeout(() => $("spendName").focus(), 50);
 });
 
+$("addExtraPayBtn").addEventListener("click", addExtraPay);
 $("saveSpendBtn").addEventListener("click", saveSpend);
 $("cancelEditBtn").addEventListener("click", clearSpendForm);
 $("startWeekBtn").addEventListener("click", startNewWeekManual);
@@ -1817,7 +1879,6 @@ $("person2Name").addEventListener("input", e => { state.person2Name = e.target.v
 $("carryBalance").addEventListener("input", e => { state.carryBalance = e.target.value; stateChanged(); renderTop(); renderHistory(); });
 $("income").addEventListener("input", e => { state.income = e.target.value; stateChanged(); renderTop(); });
 $("expectedIncome").addEventListener("input", e => { state.expectedIncome = e.target.value; stateChanged(); renderTop(); });
-$("currentBalance").addEventListener("input", e => { state.currentBalance = e.target.value; stateChanged(); renderTop(); });
 
 $("nextPayAmount").addEventListener("input", e => { state.nextPayAmount = e.target.value; stateChanged(); renderTop(); });
 $("followingPayAmount").addEventListener("input", e => { state.followingPayAmount = e.target.value; stateChanged(); renderTop(); });
