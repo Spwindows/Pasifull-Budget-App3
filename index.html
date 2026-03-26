@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f172a" />
-  <title>BudgetFlow</title>
+  <title>BudgetFlow Shared</title>
   <link rel="manifest" href="manifest.json" />
   <style>
     :root{
@@ -57,14 +57,12 @@
       width:100%;
       height:100%;
       object-fit:cover;
+      background:#fff;
     }
     .title{font-size:24px;font-weight:900}
     .sub{font-size:13px;color:var(--muted);margin-top:4px}
     .notice{
-      margin-top:12px;
-      border-radius:16px;
-      padding:12px 14px;
-      font-size:13px
+      margin-top:12px;border-radius:16px;padding:12px 14px;font-size:13px
     }
     .ok{
       background:rgba(34,197,94,.12);
@@ -98,16 +96,15 @@
     }
     h2{margin:0 0 10px;font-size:18px}
     h3{margin:0 0 8px;font-size:18px}
-    input,select,button,textarea{
+    input,select,button{
       width:100%;
       border:none;
       outline:none;
       border-radius:14px;
       padding:12px 14px;
       font-size:16px;
-      font-family:inherit;
     }
-    input,select,textarea{
+    input,select{
       background:#0f172a;
       color:#fff;
       border:1px solid var(--line);
@@ -134,85 +131,46 @@
     }
     .between{display:flex;justify-content:space-between;gap:10px;align-items:center}
     .summaryRow{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      padding:9px 0;
-      border-bottom:1px solid var(--line);
-      font-size:14px
+      display:flex;justify-content:space-between;gap:10px;
+      padding:9px 0;border-bottom:1px solid var(--line);font-size:14px
     }
     .summaryRow:last-child{border-bottom:none}
     .tabs{
-      position:fixed;
-      left:50%;
-      transform:translateX(-50%);
-      bottom:12px;
-      width:min(560px,calc(100% - 24px));
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:8px;
+      position:fixed;left:50%;transform:translateX(-50%);
+      bottom:12px;width:min(560px,calc(100% - 24px));
+      display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
       background:rgba(15,23,42,.96);
-      border:1px solid var(--line);
-      border-radius:20px;
-      padding:8px;
-      backdrop-filter:blur(10px)
+      border:1px solid var(--line);border-radius:20px;
+      padding:8px;backdrop-filter:blur(10px)
     }
     .tab{
-      background:transparent;
-      color:#cbd5e1;
-      border-radius:14px;
-      padding:10px 6px;
-      font-size:12px
+      background:transparent;color:#cbd5e1;
+      border-radius:14px;padding:10px 6px;font-size:12px
     }
     .tab.active{background:rgba(56,189,248,.18);color:#fff}
     .fab{
-      position:fixed;
-      right:18px;
-      bottom:84px;
-      width:58px;
-      height:58px;
-      border-radius:50%;
-      background:var(--accent);
-      color:#fff;
-      border:none;
-      font-size:30px;
-      box-shadow:0 12px 24px rgba(0,0,0,.35)
+      position:fixed;right:18px;bottom:84px;width:58px;height:58px;
+      border-radius:50%;background:var(--accent);color:#fff;border:none;
+      font-size:30px;box-shadow:0 12px 24px rgba(0,0,0,.35)
     }
     .pill{
-      display:inline-block;
-      padding:6px 10px;
-      border-radius:999px;
-      background:rgba(255,255,255,.08);
-      color:#cbd5e1;
-      font-size:12px
+      display:inline-block;padding:6px 10px;border-radius:999px;
+      background:rgba(255,255,255,.08);color:#cbd5e1;font-size:12px
     }
     .hidden{display:none!important}
     .mono{font-family:monospace}
     .overlay{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.72);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-      z-index:9999
+      position:fixed;inset:0;background:rgba(0,0,0,.72);
+      display:flex;align-items:center;justify-content:center;
+      padding:20px;z-index:9999
     }
     .modal{
-      background:#111827;
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:20px;
-      max-width:420px;
-      width:100%
+      background:#111827;border:1px solid var(--line);
+      border-radius:18px;padding:20px;max-width:420px;width:100%
     }
     .codebox{
-      background:#0f172a;
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:12px;
-      color:#fff;
-      word-break:break-all
+      background:#0f172a;border:1px solid var(--line);
+      border-radius:12px;padding:12px;color:#fff;word-break:break-all
     }
     .progressWrap{
       margin-top:10px;
@@ -227,12 +185,6 @@
       width:0%;
       background:linear-gradient(90deg,var(--success),var(--accent));
       transition:width .25s ease;
-    }
-    .quickGrid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:8px;
-      margin-bottom:10px;
     }
     @media (max-width:420px){
       .big{font-size:34px}
@@ -350,7 +302,7 @@
       <h2>Add Spend</h2>
 
       <div class="label" style="margin-bottom:8px">Quick add</div>
-      <div class="quickGrid">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
         <button type="button" class="secondary quickAddBtn" data-name="Groceries" data-category="Groceries">Groceries</button>
         <button type="button" class="secondary quickAddBtn" data-name="Fuel" data-category="Fuel">Fuel</button>
         <button type="button" class="secondary quickAddBtn" data-name="Eating Out" data-category="Eating Out">Eating Out</button>
@@ -364,7 +316,7 @@
         </div>
         <div>
           <div class="label">Amount</div>
-          <input id="spendAmount" type="number" min="0" step="0.01" placeholder="0" />
+          <input id="spendAmount" type="number" min="0" placeholder="0" />
         </div>
       </div>
 
@@ -437,7 +389,7 @@
     </div>
 
     <div class="card">
-      <h2>Cycle History</h2>
+      <h2>Weekly History</h2>
       <div id="historyList"></div>
     </div>
   </section>
@@ -471,56 +423,66 @@
       <div class="row" style="margin-top:10px">
         <div>
           <div class="label">Balance brought forward</div>
-          <input id="carryBalance" type="number" min="0" step="0.01" placeholder="0" />
+          <input id="carryBalance" type="number" min="0" placeholder="0" />
         </div>
         <div>
           <div class="label">Current cycle income</div>
-          <input id="income" type="number" min="0" step="0.01" placeholder="0" />
+          <input id="income" type="number" min="0" placeholder="0" />
         </div>
       </div>
 
       <div class="row" style="margin-top:10px">
         <div>
           <div class="label">Expected default pay</div>
-          <input id="expectedIncome" type="number" min="0" step="0.01" placeholder="0" />
+          <input id="expectedIncome" type="number" min="0" placeholder="0" />
         </div>
         <div>
           <div class="label">Current bank balance</div>
-          <input id="currentBalance" type="number" min="0" step="0.01" placeholder="Optional" />
+          <input id="currentBalance" type="number" min="0" placeholder="Optional" />
         </div>
       </div>
 
       <div class="row" style="margin-top:10px">
         <div>
           <div class="label">Next pay amount</div>
-          <input id="nextPayAmount" type="number" min="0" step="0.01" placeholder="Optional" />
+          <input id="nextPayAmount" type="number" min="0" placeholder="Optional" />
         </div>
         <div>
           <div class="label">Following pay amount</div>
-          <input id="followingPayAmount" type="number" min="0" step="0.01" placeholder="Optional" />
+          <input id="followingPayAmount" type="number" min="0" placeholder="Optional" />
         </div>
       </div>
 
       <div class="row" style="margin-top:10px">
         <div>
           <div class="label">Savings goal</div>
-          <input id="savingsGoal" type="number" min="0" step="0.01" placeholder="e.g. 10000" />
+          <input id="savingsGoal" type="number" min="0" placeholder="e.g. 10000" />
         </div>
         <div>
           <div class="label">Saved so far</div>
-          <input id="savingsBalance" type="number" min="0" step="0.01" placeholder="0" />
+          <input id="savingsBalance" type="number" min="0" placeholder="0" />
         </div>
       </div>
 
       <div class="row" style="margin-top:10px">
         <div>
           <div class="label">Weekly savings amount</div>
-          <input id="weeklySavingsTarget" type="number" min="0" step="0.01" placeholder="e.g. 200" />
+          <input id="weeklySavingsTarget" type="number" min="0" placeholder="e.g. 200" />
         </div>
         <div>
           <div class="label">Fun target</div>
-          <input id="funTarget" type="number" min="0" step="0.01" placeholder="0" />
+          <input id="funTarget" type="number" min="0" placeholder="0" />
         </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <div class="label">Currency</div>
+        <select id="currency">
+          <option value="AUD">AUD - Australian Dollar</option>
+          <option value="GBP">GBP - British Pound</option>
+          <option value="USD">USD - US Dollar</option>
+          <option value="EUR">EUR - Euro</option>
+        </select>
       </div>
 
       <div style="margin-top:10px">
@@ -631,7 +593,7 @@ const payFrequencies = {
 };
 
 const defaultState = {
-  appName:"BudgetFlow",
+  appName:"BudgetFlow Shared",
   logo:"",
   person1Name:"Person 1",
   person2Name:"Person 2",
@@ -648,6 +610,7 @@ const defaultState = {
   lastPay:"",
   nextPay:"",
   payFrequency:"weekly",
+  currency:"AUD",
   lastAutoRollDate:"",
   bills:[
     {id:1,name:"Rent / Mortgage",amount:"",frequency:"weekly",dueDate:""},
@@ -673,52 +636,38 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function clone(v){ return JSON.parse(JSON.stringify(v)); }
 function num(v){ const n = parseFloat(v); return Number.isFinite(n) ? n : 0; }
-
 function today(){
   const d = new Date();
   d.setHours(0,0,0,0);
   return d;
 }
-
 function formatDate(d){
   const local = new Date(d);
   local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
   return local.toISOString().split("T")[0];
 }
-
 function todayISO(){ return formatDate(today()); }
-
 function parseISO(dateStr){
   if(!dateStr) return null;
   const d = new Date(dateStr + "T00:00:00");
   d.setHours(0,0,0,0);
   return d;
 }
-
 function addDays(date, days){
   const d = new Date(date);
   d.setDate(d.getDate() + days);
   d.setHours(0,0,0,0);
   return d;
 }
-
-function esc(s){
-  return String(s || "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;");
-}
-
+function esc(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;"); }
 function cap(s){
   if(s === "fourweekly") return "4 Weekly";
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
-
 function money(n){
-  return new Intl.NumberFormat("en-AU",{
+  return new Intl.NumberFormat("en", {
     style:"currency",
-    currency:"AUD",
+    currency: state.currency || "AUD",
     maximumFractionDigits:2
   }).format(Number.isFinite(n) ? n : 0);
 }
@@ -752,11 +701,9 @@ function recalcPayDates(){
 function currentCycleIncomeValue(){
   return num(state.income);
 }
-
 function nextPayAmountValue(){
   return num(state.nextPayAmount) || num(state.expectedIncome) || 0;
 }
-
 function followingPayAmountValue(){
   return num(state.followingPayAmount) || num(state.expectedIncome) || 0;
 }
@@ -822,7 +769,7 @@ function loadSpendPrefs(){
 function normaliseState(raw){
   const merged = {...clone(defaultState), ...(raw || {})};
 
-  merged.appName = merged.appName || "BudgetFlow";
+  merged.appName = merged.appName || "BudgetFlow Shared";
   merged.logo = merged.logo || "";
   merged.person1Name = merged.person1Name || "Person 1";
   merged.person2Name = merged.person2Name || "Person 2";
@@ -839,10 +786,11 @@ function normaliseState(raw){
   merged.lastPay = merged.lastPay || "";
   merged.nextPay = merged.nextPay || "";
   merged.payFrequency = ["weekly","fortnightly","fourweekly"].includes(merged.payFrequency) ? merged.payFrequency : "weekly";
+  merged.currency = ["AUD","GBP","USD","EUR"].includes(merged.currency) ? merged.currency : "AUD";
   merged.lastAutoRollDate = merged.lastAutoRollDate || "";
 
   merged.bills = Array.isArray(merged.bills) ? merged.bills.map((b, i) => ({
-    id: b?.id || Date.now() + i,
+    id: b?.id || Date.now()+i,
     name: b?.name || "",
     amount: String(num(b?.amount)),
     frequency: ["weekly","fortnightly","fourweekly","monthly","quarterly","yearly"].includes(b?.frequency) ? b.frequency : "weekly",
@@ -850,7 +798,7 @@ function normaliseState(raw){
   })) : clone(defaultState.bills);
 
   merged.spends = Array.isArray(merged.spends) ? merged.spends.filter(Boolean).map((s, i) => ({
-    id: s?.id || Date.now() + i,
+    id: s?.id || Date.now()+i,
     name: s?.name || "Spend",
     amount: String(num(s?.amount)),
     category: s?.category || "General",
@@ -859,7 +807,7 @@ function normaliseState(raw){
   })) : [];
 
   merged.history = Array.isArray(merged.history) ? merged.history.map((h, i) => ({
-    id: h?.id || Date.now() + i,
+    id: h?.id || Date.now()+i,
     label: h?.label || "",
     weekStart: h?.weekStart || "",
     weekEnd: h?.weekEnd || "",
@@ -910,7 +858,7 @@ function deriveLastPay(){
 }
 
 function spendTotal(){
-  return state.spends.reduce((sum, s) => sum + num(s.amount), 0);
+  return state.spends.reduce((sum,s) => sum + num(s.amount), 0);
 }
 
 function incrementDateByFrequency(date, frequency){
@@ -927,7 +875,7 @@ function incrementDateByFrequency(date, frequency){
 }
 
 function billOccurrencesInRange(bill, startDate, endDate){
-  if(!bill.dueDate || !startDate || !endDate) return [];
+  if(!bill.dueDate) return [];
   let due = parseISO(bill.dueDate);
   if(!due) return [];
 
@@ -972,7 +920,7 @@ function upcomingBillsListForRange(startDate, endDate){
       });
     });
   });
-  return out.sort((a, b) => parseISO(a.dueDate) - parseISO(b.dueDate));
+  return out.sort((a,b) => parseISO(a.dueDate) - parseISO(b.dueDate));
 }
 
 function currentCycleRange(){
@@ -984,7 +932,7 @@ function currentCycleRange(){
 function nextCycleRange(){
   const next = parseISO(state.nextPay);
   const following = followingPayDate();
-  if(!next || !following) return {start:null, end:null};
+  if(!next || !following) return {start:null,end:null};
   return {start:addDays(next, 1), end:following};
 }
 
@@ -999,9 +947,7 @@ function nextCycleBillsTotal(){
 }
 
 function getSpendPotBase(){
-  if(state.currentBalance !== "" && num(state.currentBalance) > 0){
-    return num(state.currentBalance);
-  }
+  if(state.currentBalance !== "") return num(state.currentBalance);
   return num(state.carryBalance) + currentCycleIncomeValue();
 }
 
@@ -1049,9 +995,12 @@ function summary(){
   );
 
   const lockedForCurrentBills = billsCurrent;
-  const lockedForNextCycleGap = Math.max(0, currentCycleAvailable - protectedSpendNow);
+  const lockedForNextCycleGap = Math.max(
+    0,
+    currentCycleAvailable - protectedSpendNow
+  );
 
-  const bankBalanceNow = (state.currentBalance !== "" && num(state.currentBalance) > 0)
+  const bankBalanceNow = state.currentBalance !== ""
     ? num(state.currentBalance)
     : spendPotBase;
 
@@ -1090,8 +1039,8 @@ function yearTotals(){
   const hist = state.history.filter(h => new Date((h.weekStart || todayISO()) + "T00:00:00").getFullYear() === year);
   const current = summary();
   return {
-    spent: hist.reduce((s, h) => s + num(h.spent), 0) + current.spent,
-    saved: hist.reduce((s, h) => s + num(h.savedThisWeek), 0)
+    spent: hist.reduce((s,h) => s + num(h.spent), 0) + current.spent,
+    saved: hist.reduce((s,h) => s + num(h.savedThisWeek), 0)
   };
 }
 
@@ -1105,14 +1054,14 @@ function statusText(s){
   if(s.billsCurrent > 0){
     return ["ok", "You’re safe, and current bills are covered."];
   }
-  return ["ok", "You are on track."];
+  return ["ok","You are on track."];
 }
 
 function renderTop(){
   const s = summary();
   const st = statusText(s);
 
-  $("heroTitle").textContent = state.appName || "BudgetFlow";
+  $("heroTitle").textContent = state.appName || "BudgetFlow Shared";
   $("availableNow").textContent = money(s.protectedSpendNow);
   $("safeToday").textContent = money(s.dailyAvailable);
   $("daysToPay").textContent = s.days === null ? "—" : s.days + "d";
@@ -1148,6 +1097,7 @@ function renderTop(){
 
 function renderLogo(){
   const box = $("logoBox");
+
   if(state.logo){
     box.innerHTML = '<img alt="BudgetFlow logo" src="' + state.logo + '">';
   } else {
@@ -1158,6 +1108,7 @@ function renderLogo(){
 function renderUpcomingBills(){
   const holder = $("upcomingBillsList");
   const count = $("upcomingBillsCount");
+
   if(!holder || !count) return;
 
   const currentRange = currentCycleRange();
@@ -1251,7 +1202,7 @@ function renderBills(){
         </div>
         <div>
           <div class="label">Amount</div>
-          <input data-field="amount" type="number" step="0.01" value="${esc(bill.amount)}" placeholder="0">
+          <input data-field="amount" type="number" value="${esc(bill.amount)}" placeholder="0">
         </div>
       </div>
 
@@ -1269,7 +1220,7 @@ function renderBills(){
       </div>
 
       <div class="row" style="margin-top:10px">
-        <div class="small">${currentBillIds.has(bill.id) && currentDue ? `Next due before pay: ${esc(currentDue.dueDate)}` : "Not due before next pay"}</div>
+        <div class="small">${currentBillIds.has(bill.id) ? `Next due before pay: ${esc(currentDue.dueDate)}` : "Not due before next pay"}</div>
         <div class="small" style="text-align:right">${money(num(bill.amount))}</div>
       </div>
 
@@ -1279,7 +1230,7 @@ function renderBills(){
     `;
 
     div.querySelectorAll("[data-field]").forEach(el => {
-      if(el.tagName === "SELECT" || el.type === "date"){
+      if (el.tagName === "SELECT" || el.type === "date") {
         el.addEventListener("change", e => {
           state.bills[idx][e.target.dataset.field] = e.target.value;
           stateChanged();
@@ -1298,7 +1249,7 @@ function renderBills(){
     });
 
     div.querySelector(".del-bill").addEventListener("click", () => {
-      state.bills.splice(idx, 1);
+      state.bills.splice(idx,1);
       stateChanged();
       renderAll();
       applyAdminMode();
@@ -1316,7 +1267,7 @@ function renderHistory(){
   $("yearSaved").textContent = money(y.saved);
 
   if(!state.history.length){
-    holder.innerHTML = '<div class="small">No archived cycles yet.</div>';
+    holder.innerHTML = '<div class="small">No archived weeks yet.</div>';
     return;
   }
 
@@ -1348,6 +1299,7 @@ function renderSettings(){
   $("savingsBalance").value = state.savingsBalance === "0" ? "" : state.savingsBalance;
   $("weeklySavingsTarget").value = state.weeklySavingsTarget === "0" ? "" : state.weeklySavingsTarget;
   $("funTarget").value = state.funTarget === "0" ? "" : state.funTarget;
+  $("currency").value = state.currency || "AUD";
   $("lastPay").value = state.lastPay;
   $("nextPay").value = state.nextPay;
   $("payFrequency").value = state.payFrequency || "weekly";
@@ -1364,7 +1316,6 @@ function renderAll(){
   renderBills();
   renderHistory();
   renderSettings();
-  bindQuickAddButtons();
 }
 
 function applyAdminMode(){
@@ -1390,8 +1341,9 @@ function bindQuickAddButtons(){
     btn.dataset.bound = "1";
 
     btn.addEventListener("click", () => {
-      loadSpendPrefs();
       $("spendName").value = btn.dataset.name || "";
+      $("spendCategory").value = btn.dataset.category || "General";
+      loadSpendPrefs();
       $("spendCategory").value = btn.dataset.category || "General";
       if(!$("spendDate").value) $("spendDate").value = todayISO();
       $("spendAmount").focus();
@@ -1433,14 +1385,10 @@ function saveSpend(){
     person: $("spendPerson").value,
     date: $("spendDate").value || todayISO()
   };
-
   if(!num(spend.amount)) return;
 
-  if(editingSpendId){
-    state.spends = state.spends.map(x => x.id === editingSpendId ? spend : x);
-  } else {
-    state.spends.push(spend);
-  }
+  if(editingSpendId) state.spends = state.spends.map(x => x.id === editingSpendId ? spend : x);
+  else state.spends.push(spend);
 
   saveSpendPrefs();
   stateChanged();
@@ -1573,7 +1521,7 @@ function useSavings(){
 function exportCsv(){
   const rows = [["Week Start","Week End","Carry Forward","Income","Saved This Week","Spent","Left"]];
   state.history.forEach(h => rows.push([h.weekStart,h.weekEnd,h.carry,h.income,h.savedThisWeek,h.spent,h.left]));
-  const csv = rows.map(r => r.map(c => '"' + String(c ?? "").replaceAll('"','""') + '"').join(",")).join("\n");
+  const csv = rows.map(r => r.map(c => '"' + String(c ?? "").replaceAll('"','""') + '"').join(",")).join("\\n");
   const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -1638,6 +1586,7 @@ async function ensureRemoteRow(){
     saveLocalState();
     renderAll();
     applyAdminMode();
+    clearSpendForm();
     setSyncStatus("Connected. Live sync active.");
     return;
   }
@@ -1691,6 +1640,7 @@ async function pullRemote(){
   state = normaliseState(res.data.payload);
   saveLocalState();
   renderAll();
+  clearSpendForm();
   applyAdminMode();
   isApplyingRemote = false;
   setSyncStatus("Updated from shared cloud.");
@@ -1768,86 +1718,28 @@ $("installNowBtn").addEventListener("click", async () => {
 
 $("hideInstallCardBtn").addEventListener("click", hideInstallCard);
 
-$("appName").addEventListener("input", e => {
-  state.appName = e.target.value;
-  stateChanged();
-  renderTop();
-});
+$("appName").addEventListener("input", e => { state.appName = e.target.value; stateChanged(); renderTop(); });
+$("person1Name").addEventListener("input", e => { state.person1Name = e.target.value || "Person 1"; stateChanged(); renderPeopleSelect(); renderSpends(); clearSpendForm(); });
+$("person2Name").addEventListener("input", e => { state.person2Name = e.target.value || "Person 2"; stateChanged(); renderPeopleSelect(); renderSpends(); clearSpendForm(); });
 
-$("person1Name").addEventListener("input", e => {
-  state.person1Name = e.target.value || "Person 1";
-  stateChanged();
-  renderPeopleSelect();
-  renderSpends();
-});
+$("carryBalance").addEventListener("input", e => { state.carryBalance = e.target.value; stateChanged(); renderTop(); renderHistory(); });
+$("income").addEventListener("input", e => { state.income = e.target.value; stateChanged(); renderTop(); });
+$("expectedIncome").addEventListener("input", e => { state.expectedIncome = e.target.value; stateChanged(); renderTop(); });
+$("currentBalance").addEventListener("input", e => { state.currentBalance = e.target.value; stateChanged(); renderTop(); });
 
-$("person2Name").addEventListener("input", e => {
-  state.person2Name = e.target.value || "Person 2";
-  stateChanged();
-  renderPeopleSelect();
-  renderSpends();
-});
+$("nextPayAmount").addEventListener("input", e => { state.nextPayAmount = e.target.value; stateChanged(); renderTop(); });
+$("followingPayAmount").addEventListener("input", e => { state.followingPayAmount = e.target.value; stateChanged(); renderTop(); });
 
-$("carryBalance").addEventListener("input", e => {
-  state.carryBalance = e.target.value;
-  stateChanged();
-  renderTop();
-  renderHistory();
-});
+$("savingsGoal").addEventListener("input", e => { state.savingsGoal = e.target.value; stateChanged(); renderTop(); });
+$("savingsBalance").addEventListener("input", e => { state.savingsBalance = e.target.value; stateChanged(); renderTop(); });
+$("weeklySavingsTarget").addEventListener("input", e => { state.weeklySavingsTarget = e.target.value; stateChanged(); renderTop(); renderHistory(); });
+$("funTarget").addEventListener("input", e => { state.funTarget = e.target.value; stateChanged(); renderTop(); });
 
-$("income").addEventListener("input", e => {
-  state.income = e.target.value;
+$("currency").addEventListener("change", e => {
+  state.currency = e.target.value;
   stateChanged();
-  renderTop();
-});
-
-$("expectedIncome").addEventListener("input", e => {
-  state.expectedIncome = e.target.value;
-  stateChanged();
-  renderTop();
-});
-
-$("currentBalance").addEventListener("input", e => {
-  state.currentBalance = e.target.value;
-  stateChanged();
-  renderTop();
-});
-
-$("nextPayAmount").addEventListener("input", e => {
-  state.nextPayAmount = e.target.value;
-  stateChanged();
-  renderTop();
-});
-
-$("followingPayAmount").addEventListener("input", e => {
-  state.followingPayAmount = e.target.value;
-  stateChanged();
-  renderTop();
-});
-
-$("savingsGoal").addEventListener("input", e => {
-  state.savingsGoal = e.target.value;
-  stateChanged();
-  renderTop();
-});
-
-$("savingsBalance").addEventListener("input", e => {
-  state.savingsBalance = e.target.value;
-  stateChanged();
-  renderTop();
-});
-
-$("weeklySavingsTarget").addEventListener("input", e => {
-  state.weeklySavingsTarget = e.target.value;
-  stateChanged();
-  renderTop();
-  renderHistory();
-});
-
-$("funTarget").addEventListener("input", e => {
-  state.funTarget = e.target.value;
-  stateChanged();
-  renderTop();
+  renderAll();
+  clearSpendForm();
 });
 
 $("payFrequency").addEventListener("change", e => {
@@ -1935,6 +1827,7 @@ $("spendDate").value = todayISO();
 state = normaliseState(state);
 checkAutoRollover();
 renderAll();
+bindQuickAddButtons();
 clearSpendForm();
 applyAdminMode();
 showSetupIfNeeded();
