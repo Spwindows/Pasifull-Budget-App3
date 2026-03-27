@@ -1048,44 +1048,85 @@ function autoPayDueBills(){
   return changed;
 }
 
-function upcomingBillsListForRange(startDate, endDate){
-  if(!startDate || !endDate) return [];
-  const out = [];
+function getDailyCardState(daily){
+  const budget = daily.budget;
+  const spent = daily.todaySpent;
+  const left = daily.leftToday;
 
-  state.bills.forEach(bill => {
-    if(bill.fundingMode !== "due_only") return;
-    const occurrences = billOccurrencesInRange(bill, startDate, endDate);
-    occurrences.forEach(due => {
-      out.push({
-        id: `${bill.id}-${formatDate(due)}`,
-        billId: bill.id,
-        name: bill.name,
-        amount: num(bill.amount),
-        dueDate: formatDate(due),
-        fundingMode: bill.fundingMode
-      });
-    });
-  });
+  if(budget <= 0){
+    return {
+      todayBudgetCard: "",
+      leftTodayCard: "",
+      spentTodayCard: ""
+    };
+  }
 
-  state.bills.forEach(bill => {
-    if(bill.fundingMode !== "sinking_fund") return;
-    const due = nextOccurrenceOnOrAfter(bill, startDate);
-    if(!due) return;
-    if(due < startDate || due > endDate) return;
+  if(left < 0){
+    return {
+      todayBudgetCard: "bad",
+      leftTodayCard: "bad",
+      spentTodayCard: "bad"
+    };
+  }
 
-    out.push({
-      id: `${bill.id}-${formatDate(due)}-sf`,
-      billId: bill.id,
-      name: bill.name,
-      amount: num(bill.amount),
-      dueDate: formatDate(due),
-      fundingMode: bill.fundingMode
-    });
-  });
+  if(Math.abs(left) < 0.005){
+    return {
+      todayBudgetCard: "caution",
+      leftTodayCard: "caution",
+      spentTodayCard: "caution"
+    };
+  }
 
-  return out.sort((a,b) => parseISO(a.dueDate) - parseISO(b.dueDate));
+  const usedRatio = spent / budget;
+
+  if(usedRatio >= 0.8){
+    return {
+      todayBudgetCard: "caution",
+      leftTodayCard: "caution",
+      spentTodayCard: "caution"
+    };
+  }
+
+  return {
+    todayBudgetCard: "good",
+    leftTodayCard: "good",
+    spentTodayCard: "good"
+  };
 }
+  
+function renderTodayProgress(){
+  const daily = getDailyStats();
+  const bar = $("todayProgressBar");
+  const text = $("todayProgressText");
 
+  if(!bar || !text) return;
+
+  if(daily.budget <= 0){
+    bar.style.width = "0%";
+    bar.style.background = "linear-gradient(90deg,var(--danger),var(--danger))";
+    text.textContent = "No daily budget available";
+    return;
+  }
+
+  const usedPercentRaw = (daily.todaySpent / daily.budget) * 100;
+  const usedPercent = Math.max(0, usedPercentRaw);
+
+  bar.style.width = `${Math.min(usedPercent, 100)}%`;
+
+  if(daily.leftToday < 0){
+    bar.style.background = "linear-gradient(90deg,var(--danger),var(--danger))";
+    text.textContent = `${Math.round(usedPercent)}% used • over today’s budget`;
+  } else if(Math.abs(daily.leftToday) < 0.005){
+    bar.style.background = "linear-gradient(90deg,var(--warn),var(--warn))";
+    text.textContent = "100% used • today’s budget reached";
+  } else if(daily.todaySpent / daily.budget >= 0.8){
+    bar.style.background = "linear-gradient(90deg,var(--warn),var(--accent))";
+    text.textContent = `${Math.round(usedPercent)}% used`;
+  } else {
+    bar.style.background = "linear-gradient(90deg,var(--success),var(--accent))";
+    text.textContent = `${Math.round(usedPercent)}% used`;
+  }
+}
 function currentCycleRange(){
   const start = today();
   const end = parseISO(state.nextPay);
