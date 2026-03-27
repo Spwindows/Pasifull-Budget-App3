@@ -151,7 +151,7 @@
       display:flex;
       justify-content:space-between;
       gap:10px;
-      align-items:center
+      align-items:center;
     }
     .summaryRow{
       display:flex;
@@ -159,7 +159,7 @@
       gap:10px;
       padding:9px 0;
       border-bottom:1px solid var(--line);
-      font-size:14px
+      font-size:14px;
     }
     .summaryRow:last-child{border-bottom:none}
     .tabs{
@@ -175,14 +175,14 @@
       border:1px solid var(--line);
       border-radius:20px;
       padding:8px;
-      backdrop-filter:blur(10px)
+      backdrop-filter:blur(10px);
     }
     .tab{
       background:transparent;
       color:#cbd5e1;
       border-radius:14px;
       padding:10px 6px;
-      font-size:12px
+      font-size:12px;
     }
     .tab.active{background:rgba(56,189,248,.18);color:#fff}
     .fab{
@@ -196,7 +196,7 @@
       color:#fff;
       border:none;
       font-size:30px;
-      box-shadow:0 12px 24px rgba(0,0,0,.35)
+      box-shadow:0 12px 24px rgba(0,0,0,.35);
     }
     .pill{
       display:inline-block;
@@ -204,7 +204,7 @@
       border-radius:999px;
       background:rgba(255,255,255,.08);
       color:#cbd5e1;
-      font-size:12px
+      font-size:12px;
     }
     .hidden{display:none!important}
     .mono{font-family:monospace}
@@ -216,7 +216,7 @@
       align-items:center;
       justify-content:center;
       padding:20px;
-      z-index:9999
+      z-index:9999;
     }
     .modal{
       background:#111827;
@@ -224,7 +224,7 @@
       border-radius:18px;
       padding:20px;
       max-width:420px;
-      width:100%
+      width:100%;
     }
     .codebox{
       background:#0f172a;
@@ -232,7 +232,7 @@
       border-radius:12px;
       padding:12px;
       color:#fff;
-      word-break:break-all
+      word-break:break-all;
     }
     .progressWrap{
       margin-top:10px;
@@ -667,31 +667,31 @@ const payFrequencies = {
 };
 
 const defaultState = {
-  appName: "BudgetFlow Shared",
-  logo: "",
-  person1Name: "Person 1",
-  person2Name: "Person 2",
-  carryBalance: "",
-  expectedIncome: "",
-  nextPayAmount: "",
-  followingPayAmount: "",
-  savingsGoal: "",
-  savingsBalance: "",
-  weeklySavingsTarget: "",
-  funTarget: "",
-  lastPay: "",
-  nextPay: "",
-  payFrequency: "weekly",
-  currency: "AUD",
-  lastAutoRollDate: "",
-  bills: [
-    {id: 1, name: "Rent / Mortgage", amount: "", frequency: "weekly", dueDate: "", fundingMode: "sinking_fund"},
-    {id: 2, name: "Electricity", amount: "", frequency: "monthly", dueDate: "", fundingMode: "sinking_fund"}
+  appName:"BudgetFlow Shared",
+  logo:"",
+  person1Name:"Person 1",
+  person2Name:"Person 2",
+  carryBalance:"",
+  expectedIncome:"",
+  nextPayAmount:"",
+  followingPayAmount:"",
+  savingsGoal:"",
+  savingsBalance:"",
+  weeklySavingsTarget:"",
+  funTarget:"",
+  lastPay:"",
+  nextPay:"",
+  payFrequency:"weekly",
+  currency:"AUD",
+  lastAutoRollDate:"",
+  bills:[
+    {id:1,name:"Rent / Mortgage",amount:"",frequency:"weekly",dueDate:"",fundingMode:"sinking_fund"},
+    {id:2,name:"Electricity",amount:"",frequency:"monthly",dueDate:"",fundingMode:"sinking_fund"}
   ],
-  spends: [],
-  history: [],
-  extraPays: [],
-  paidBillOccurrences: []
+  spends:[],
+  history:[],
+  extraPays:[],
+  paidBillOccurrences:[]
 };
 
 const params = new URLSearchParams(location.search);
@@ -723,7 +723,9 @@ function formatDate(d){
   return local.toISOString().split("T")[0];
 }
 
-function todayISO(){ return formatDate(today()); }
+function todayISO(){
+  return formatDate(today());
+}
 
 function parseISO(dateStr){
   if(!dateStr) return null;
@@ -756,9 +758,9 @@ function cap(s){
 
 function money(n){
   return new Intl.NumberFormat("en", {
-    style: "currency",
+    style:"currency",
     currency: state.currency || "AUD",
-    maximumFractionDigits: 2
+    maximumFractionDigits:2
   }).format(Number.isFinite(n) ? n : 0);
 }
 
@@ -1144,7 +1146,6 @@ function summary(){
   const goalProgress = savingsGoal > 0 ? Math.min((savingsBalance / savingsGoal) * 100, 100) : 0;
 
   const spendPotBase = getSpendPotBase();
-
   const lockedForCurrentBills = billsCurrent + reserveCurrent;
 
   const currentCycleAvailable =
@@ -1200,9 +1201,9 @@ function summary(){
     protectedSpendNow,
     lockedForCurrentBills,
     lockedForNextCycleGap,
-    days: d,
+    days:d,
     daysLeft,
-    forecast: twoCycleResources - twoCycleObligations
+    forecast:twoCycleResources - twoCycleObligations
   };
 }
 
@@ -1578,6 +1579,7 @@ function renderBills(){
           stateChanged();
           renderBills();
           renderTop();
+          renderTodayProgress();
           renderUpcomingBills();
         });
       } else {
@@ -1585,6 +1587,7 @@ function renderBills(){
           state.bills[idx][e.target.dataset.field] = e.target.value;
           stateChanged();
           renderTop();
+          renderTodayProgress();
           renderUpcomingBills();
         });
       }
@@ -1620,7 +1623,7 @@ function renderHistory(){
     div.innerHTML = `
       <div style="font-weight:700">${esc(h.label || h.weekStart)}</div>
       <div class="small" style="margin-top:6px">
-        B/F ${money(num(h.carry))} • Extra Pay ${money(num(h.income))} • Saved ${money(num(h.savedThisWeek))} • Spent ${money(num(h.spent))}
+        B/F ${money(num(h.carry))} • Income ${money(num(h.income))} • Saved ${money(num(h.savedThisWeek))} • Spent ${money(num(h.spent))}
       </div>
       <div class="small" style="margin-top:4px">Left: ${money(num(h.left))}</div>
     `;
@@ -1726,6 +1729,7 @@ function saveSpend(){
     person: $("spendPerson").value,
     date: $("spendDate").value || todayISO()
   };
+
   if(!num(spend.amount)) return;
 
   if(editingSpendId) state.spends = state.spends.map(x => x.id === editingSpendId ? spend : x);
@@ -1815,12 +1819,14 @@ function doWeeklyRoll(forced = false){
 function checkAutoRollover(){
   let rolled = false;
   let guard = 0;
+
   while(guard < 20){
     guard++;
     const changed = doWeeklyRoll(false);
     if(!changed) break;
     rolled = true;
   }
+
   if(rolled) setSyncStatus("New pay cycle started automatically.");
 }
 
@@ -1879,7 +1885,7 @@ function useSavings(){
 }
 
 function exportCsv(){
-  const rows = [["Cycle Start","Cycle End","Carry Forward","Extra Pay","Saved This Cycle","Spent","Left"]];
+  const rows = [["Cycle Start","Cycle End","Carry Forward","Income","Saved This Cycle","Spent","Left"]];
   state.history.forEach(h => rows.push([h.weekStart,h.weekEnd,h.carry,h.income,h.savedThisWeek,h.spent,h.left]));
   const csv = rows.map(r => r.map(c => '"' + String(c ?? "").replaceAll('"','""') + '"').join(",")).join("\n");
   const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
@@ -2030,12 +2036,12 @@ $("useSavingsBtn").addEventListener("click", useSavings);
 
 $("addBillBtn").addEventListener("click", () => {
   state.bills.push({
-    id: Date.now(),
-    name: "",
-    amount: "",
-    frequency: "weekly",
-    dueDate: "",
-    fundingMode: "sinking_fund"
+    id:Date.now(),
+    name:"",
+    amount:"",
+    frequency:"weekly",
+    dueDate:"",
+    fundingMode:"sinking_fund"
   });
   stateChanged();
   renderBills();
@@ -2088,19 +2094,83 @@ $("installNowBtn").addEventListener("click", async () => {
 
 $("hideInstallCardBtn").addEventListener("click", hideInstallCard);
 
-$("appName").addEventListener("input", e => { state.appName = e.target.value; stateChanged(); renderTop(); });
-$("person1Name").addEventListener("input", e => { state.person1Name = e.target.value || "Person 1"; stateChanged(); renderPeopleSelect(); renderSpends(); clearSpendForm(); });
-$("person2Name").addEventListener("input", e => { state.person2Name = e.target.value || "Person 2"; stateChanged(); renderPeopleSelect(); renderSpends(); clearSpendForm(); });
+$("appName").addEventListener("input", e => {
+  state.appName = e.target.value;
+  stateChanged();
+  renderTop();
+});
 
-$("carryBalance").addEventListener("input", e => { state.carryBalance = e.target.value; stateChanged(); renderTop(); renderHistory(); });
-$("expectedIncome").addEventListener("input", e => { state.expectedIncome = e.target.value; stateChanged(); renderTop(); });
-$("nextPayAmount").addEventListener("input", e => { state.nextPayAmount = e.target.value; stateChanged(); renderTop(); });
-$("followingPayAmount").addEventListener("input", e => { state.followingPayAmount = e.target.value; stateChanged(); renderTop(); });
+$("person1Name").addEventListener("input", e => {
+  state.person1Name = e.target.value || "Person 1";
+  stateChanged();
+  renderPeopleSelect();
+  renderSpends();
+  clearSpendForm();
+});
 
-$("savingsGoal").addEventListener("input", e => { state.savingsGoal = e.target.value; stateChanged(); renderTop(); });
-$("savingsBalance").addEventListener("input", e => { state.savingsBalance = e.target.value; stateChanged(); renderTop(); });
-$("weeklySavingsTarget").addEventListener("input", e => { state.weeklySavingsTarget = e.target.value; stateChanged(); renderTop(); renderHistory(); });
-$("funTarget").addEventListener("input", e => { state.funTarget = e.target.value; stateChanged(); renderTop(); });
+$("person2Name").addEventListener("input", e => {
+  state.person2Name = e.target.value || "Person 2";
+  stateChanged();
+  renderPeopleSelect();
+  renderSpends();
+  clearSpendForm();
+});
+
+$("carryBalance").addEventListener("input", e => {
+  state.carryBalance = e.target.value;
+  stateChanged();
+  renderTop();
+  renderTodayProgress();
+  renderHistory();
+});
+
+$("expectedIncome").addEventListener("input", e => {
+  state.expectedIncome = e.target.value;
+  stateChanged();
+  renderTop();
+  renderTodayProgress();
+});
+
+$("nextPayAmount").addEventListener("input", e => {
+  state.nextPayAmount = e.target.value;
+  stateChanged();
+  renderTop();
+  renderTodayProgress();
+});
+
+$("followingPayAmount").addEventListener("input", e => {
+  state.followingPayAmount = e.target.value;
+  stateChanged();
+  renderTop();
+  renderTodayProgress();
+});
+
+$("savingsGoal").addEventListener("input", e => {
+  state.savingsGoal = e.target.value;
+  stateChanged();
+  renderTop();
+});
+
+$("savingsBalance").addEventListener("input", e => {
+  state.savingsBalance = e.target.value;
+  stateChanged();
+  renderTop();
+});
+
+$("weeklySavingsTarget").addEventListener("input", e => {
+  state.weeklySavingsTarget = e.target.value;
+  stateChanged();
+  renderTop();
+  renderTodayProgress();
+  renderHistory();
+});
+
+$("funTarget").addEventListener("input", e => {
+  state.funTarget = e.target.value;
+  stateChanged();
+  renderTop();
+  renderTodayProgress();
+});
 
 $("currency").addEventListener("change", e => {
   state.currency = e.target.value;
