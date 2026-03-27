@@ -63,7 +63,10 @@
     .title{font-size:24px;font-weight:900}
     .sub{font-size:13px;color:var(--muted);margin-top:4px}
     .notice{
-      margin-top:12px;border-radius:16px;padding:12px 14px;font-size:13px
+      margin-top:12px;
+      border-radius:16px;
+      padding:12px 14px;
+      font-size:13px
     }
     .ok{
       background:rgba(34,197,94,.12);
@@ -146,46 +149,85 @@
     }
     .between{display:flex;justify-content:space-between;gap:10px;align-items:center}
     .summaryRow{
-      display:flex;justify-content:space-between;gap:10px;
-      padding:9px 0;border-bottom:1px solid var(--line);font-size:14px
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding:9px 0;
+      border-bottom:1px solid var(--line);
+      font-size:14px
     }
     .summaryRow:last-child{border-bottom:none}
     .tabs{
-      position:fixed;left:50%;transform:translateX(-50%);
-      bottom:12px;width:min(560px,calc(100% - 24px));
-      display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:12px;
+      width:min(560px,calc(100% - 24px));
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:8px;
       background:rgba(15,23,42,.96);
-      border:1px solid var(--line);border-radius:20px;
-      padding:8px;backdrop-filter:blur(10px)
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:8px;
+      backdrop-filter:blur(10px)
     }
     .tab{
-      background:transparent;color:#cbd5e1;
-      border-radius:14px;padding:10px 6px;font-size:12px
+      background:transparent;
+      color:#cbd5e1;
+      border-radius:14px;
+      padding:10px 6px;
+      font-size:12px
     }
     .tab.active{background:rgba(56,189,248,.18);color:#fff}
     .fab{
-      position:fixed;right:18px;bottom:84px;width:58px;height:58px;
-      border-radius:50%;background:var(--accent);color:#fff;border:none;
-      font-size:30px;box-shadow:0 12px 24px rgba(0,0,0,.35)
+      position:fixed;
+      right:18px;
+      bottom:84px;
+      width:58px;
+      height:58px;
+      border-radius:50%;
+      background:var(--accent);
+      color:#fff;
+      border:none;
+      font-size:30px;
+      box-shadow:0 12px 24px rgba(0,0,0,.35)
     }
     .pill{
-      display:inline-block;padding:6px 10px;border-radius:999px;
-      background:rgba(255,255,255,.08);color:#cbd5e1;font-size:12px
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      color:#cbd5e1;
+      font-size:12px
     }
     .hidden{display:none!important}
     .mono{font-family:monospace}
     .overlay{
-      position:fixed;inset:0;background:rgba(0,0,0,.72);
-      display:flex;align-items:center;justify-content:center;
-      padding:20px;z-index:9999
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.72);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:9999
     }
     .modal{
-      background:#111827;border:1px solid var(--line);
-      border-radius:18px;padding:20px;max-width:420px;width:100%
+      background:#111827;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:20px;
+      max-width:420px;
+      width:100%
     }
     .codebox{
-      background:#0f172a;border:1px solid var(--line);
-      border-radius:12px;padding:12px;color:#fff;word-break:break-all
+      background:#0f172a;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      color:#fff;
+      word-break:break-all
     }
     .progressWrap{
       margin-top:10px;
@@ -204,9 +246,7 @@
     @media (max-width:420px){
       .big{font-size:34px}
       .value{font-size:22px}
-      .row{
-        flex-direction:column;
-      }
+      .row{flex-direction:column}
     }
   </style>
 </head>
@@ -271,7 +311,7 @@
           <div id="weeklyBills" class="value">$0.00</div>
         </div>
       </div>
- 
+
       <div style="margin-top:10px">
         <div class="between" style="margin-bottom:6px">
           <div class="small">Today progress</div>
@@ -281,13 +321,14 @@
           <div id="todayProgressBar" class="progressBar"></div>
         </div>
       </div>
-     
+
       <div class="row" style="margin-top:12px">
         <button id="goSpendsBtn" class="success">Add Spend</button>
         <button id="addExtraPayBtn" class="secondary">Add Extra Pay</button>
         <button id="startWeekBtn" class="warn">Start New Cycle</button>
       </div>
     </div>
+
     <div class="card">
       <h2>Locked Money</h2>
       <div class="summaryRow"><span>App balance</span><strong id="sumBankBalance">$0.00</strong></div>
@@ -672,36 +713,50 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function clone(v){ return JSON.parse(JSON.stringify(v)); }
 function num(v){ const n = parseFloat(v); return Number.isFinite(n) ? n : 0; }
+
 function today(){
   const d = new Date();
   d.setHours(0,0,0,0);
   return d;
 }
+
 function formatDate(d){
   const local = new Date(d);
   local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
   return local.toISOString().split("T")[0];
 }
+
 function todayISO(){ return formatDate(today()); }
+
 function parseISO(dateStr){
   if(!dateStr) return null;
   const d = new Date(dateStr + "T00:00:00");
   d.setHours(0,0,0,0);
   return d;
 }
+
 function addDays(date, days){
   const d = new Date(date);
   d.setDate(d.getDate() + days);
   d.setHours(0,0,0,0);
   return d;
 }
-function esc(s){ return String(s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;"); }
+
+function esc(s){
+  return String(s || "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;");
+}
+
 function cap(s){
   if(s === "fourweekly") return "4 Weekly";
   if(s === "sinking_fund") return "Sinking Fund";
   if(s === "due_only") return "Due Date Only";
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
+
 function money(n){
   return new Intl.NumberFormat("en", {
     style:"currency",
@@ -747,6 +802,7 @@ function currentCycleIncomeValue(){
 function nextPayAmountValue(){
   return num(state.nextPayAmount) || num(state.expectedIncome) || 0;
 }
+
 function followingPayAmountValue(){
   return num(state.followingPayAmount) || num(state.expectedIncome) || 0;
 }
@@ -921,9 +977,7 @@ function spendTotal(){
 
 function spentTodayTotal(){
   const todayStr = todayISO();
-  return state.spends.reduce((sum, s) => {
-    return sum + (s.date === todayStr ? num(s.amount) : 0);
-  }, 0);
+  return state.spends.reduce((sum, s) => sum + (s.date === todayStr ? num(s.amount) : 0), 0);
 }
 
 function incrementDateByFrequency(date, frequency){
@@ -1048,85 +1102,6 @@ function autoPayDueBills(){
   return changed;
 }
 
-function getDailyCardState(daily){
-  const budget = daily.budget;
-  const spent = daily.todaySpent;
-  const left = daily.leftToday;
-
-  if(budget <= 0){
-    return {
-      todayBudgetCard: "",
-      leftTodayCard: "",
-      spentTodayCard: ""
-    };
-  }
-
-  if(left < 0){
-    return {
-      todayBudgetCard: "bad",
-      leftTodayCard: "bad",
-      spentTodayCard: "bad"
-    };
-  }
-
-  if(Math.abs(left) < 0.005){
-    return {
-      todayBudgetCard: "caution",
-      leftTodayCard: "caution",
-      spentTodayCard: "caution"
-    };
-  }
-
-  const usedRatio = spent / budget;
-
-  if(usedRatio >= 0.8){
-    return {
-      todayBudgetCard: "caution",
-      leftTodayCard: "caution",
-      spentTodayCard: "caution"
-    };
-  }
-
-  return {
-    todayBudgetCard: "good",
-    leftTodayCard: "good",
-    spentTodayCard: "good"
-  };
-}
-  
-function renderTodayProgress(){
-  const daily = getDailyStats();
-  const bar = $("todayProgressBar");
-  const text = $("todayProgressText");
-
-  if(!bar || !text) return;
-
-  if(daily.budget <= 0){
-    bar.style.width = "0%";
-    bar.style.background = "linear-gradient(90deg,var(--danger),var(--danger))";
-    text.textContent = "No daily budget available";
-    return;
-  }
-
-  const usedPercentRaw = (daily.todaySpent / daily.budget) * 100;
-  const usedPercent = Math.max(0, usedPercentRaw);
-
-  bar.style.width = `${Math.min(usedPercent, 100)}%`;
-
-  if(daily.leftToday < 0){
-    bar.style.background = "linear-gradient(90deg,var(--danger),var(--danger))";
-    text.textContent = `${Math.round(usedPercent)}% used • over today’s budget`;
-  } else if(Math.abs(daily.leftToday) < 0.005){
-    bar.style.background = "linear-gradient(90deg,var(--warn),var(--warn))";
-    text.textContent = "100% used • today’s budget reached";
-  } else if(daily.todaySpent / daily.budget >= 0.8){
-    bar.style.background = "linear-gradient(90deg,var(--warn),var(--accent))";
-    text.textContent = `${Math.round(usedPercent)}% used`;
-  } else {
-    bar.style.background = "linear-gradient(90deg,var(--success),var(--accent))";
-    text.textContent = `${Math.round(usedPercent)}% used`;
-  }
-}
 function currentCycleRange(){
   const start = today();
   const end = parseISO(state.nextPay);
@@ -1188,9 +1163,7 @@ function summary(){
     - fun
     - spent;
 
-  const twoCycleResources =
-    spendPotBase
-    + nextIncome;
+  const twoCycleResources = spendPotBase + nextIncome;
 
   const twoCycleObligations =
     billsCurrent
@@ -1293,39 +1266,6 @@ function getDailyCardState(daily){
   const budget = daily.budget;
   const spent = daily.todaySpent;
   const left = daily.leftToday;
-  function renderTodayProgress(){
-  const daily = getDailyStats();
-  const bar = $("todayProgressBar");
-  const text = $("todayProgressText");
-
-  if(!bar || !text) return;
-
-  if(daily.budget <= 0){
-    bar.style.width = "0%";
-    bar.style.background = "linear-gradient(90deg,var(--danger),var(--danger))";
-    text.textContent = "No daily budget available";
-    return;
-  }
-
-  const usedPercentRaw = (daily.todaySpent / daily.budget) * 100;
-  const usedPercent = Math.max(0, usedPercentRaw);
-
-  bar.style.width = `${Math.min(usedPercent, 100)}%`;
-
-  if(daily.leftToday < 0){
-    bar.style.background = "linear-gradient(90deg,var(--danger),var(--danger))";
-    text.textContent = `${Math.round(usedPercent)}% used • over today’s budget`;
-  } else if(Math.abs(daily.leftToday) < 0.005){
-    bar.style.background = "linear-gradient(90deg,var(--warn),var(--warn))";
-    text.textContent = "100% used • today’s budget reached";
-  } else if(daily.todaySpent / daily.budget >= 0.8){
-    bar.style.background = "linear-gradient(90deg,var(--warn),var(--accent))";
-    text.textContent = `${Math.round(usedPercent)}% used`;
-  } else {
-    bar.style.background = "linear-gradient(90deg,var(--success),var(--accent))";
-    text.textContent = `${Math.round(usedPercent)}% used`;
-  }
-}
 
   if(budget <= 0){
     return {
@@ -1366,6 +1306,40 @@ function getDailyCardState(daily){
     leftTodayCard: "good",
     spentTodayCard: "good"
   };
+}
+
+function renderTodayProgress(){
+  const daily = getDailyStats();
+  const bar = $("todayProgressBar");
+  const text = $("todayProgressText");
+
+  if(!bar || !text) return;
+
+  if(daily.budget <= 0){
+    bar.style.width = "0%";
+    bar.style.background = "linear-gradient(90deg,var(--danger),var(--danger))";
+    text.textContent = "No daily budget available";
+    return;
+  }
+
+  const usedPercentRaw = (daily.todaySpent / daily.budget) * 100;
+  const usedPercent = Math.max(0, usedPercentRaw);
+
+  bar.style.width = `${Math.min(usedPercent, 100)}%`;
+
+  if(daily.leftToday < 0){
+    bar.style.background = "linear-gradient(90deg,var(--danger),var(--danger))";
+    text.textContent = `${Math.round(usedPercent)}% used • over today’s budget`;
+  } else if(Math.abs(daily.leftToday) < 0.005){
+    bar.style.background = "linear-gradient(90deg,var(--warn),var(--warn))";
+    text.textContent = "100% used • today’s budget reached";
+  } else if(daily.todaySpent / daily.budget >= 0.8){
+    bar.style.background = "linear-gradient(90deg,var(--warn),var(--accent))";
+    text.textContent = `${Math.round(usedPercent)}% used`;
+  } else {
+    bar.style.background = "linear-gradient(90deg,var(--success),var(--accent))";
+    text.textContent = `${Math.round(usedPercent)}% used`;
+  }
 }
 
 function yearTotals(){
@@ -1434,6 +1408,44 @@ function renderLogo(){
   } else {
     box.innerHTML = '<img src="icon-192.png" alt="BudgetFlow logo">';
   }
+}
+
+function upcomingBillsListForRange(startDate, endDate){
+  if(!startDate || !endDate) return [];
+  const out = [];
+
+  state.bills.forEach(bill => {
+    if(bill.fundingMode !== "due_only") return;
+    const occurrences = billOccurrencesInRange(bill, startDate, endDate);
+    occurrences.forEach(due => {
+      out.push({
+        id: `${bill.id}-${formatDate(due)}`,
+        billId: bill.id,
+        name: bill.name,
+        amount: num(bill.amount),
+        dueDate: formatDate(due),
+        fundingMode: bill.fundingMode
+      });
+    });
+  });
+
+  state.bills.forEach(bill => {
+    if(bill.fundingMode !== "sinking_fund") return;
+    const due = nextOccurrenceOnOrAfter(bill, startDate);
+    if(!due) return;
+    if(due < startDate || due > endDate) return;
+
+    out.push({
+      id: `${bill.id}-${formatDate(due)}-sf`,
+      billId: bill.id,
+      name: bill.name,
+      amount: num(bill.amount),
+      dueDate: formatDate(due),
+      fundingMode: bill.fundingMode
+    });
+  });
+
+  return out.sort((a,b) => parseISO(a.dueDate) - parseISO(b.dueDate));
 }
 
 function renderUpcomingBills(){
@@ -2207,10 +2219,12 @@ applyAdminMode();
 showSetupIfNeeded();
 showInstallCard(false);
 ensureRemoteRow();
+
 setInterval(() => {
   autoPayDueBills();
   renderAll();
 }, 60000);
+
 setInterval(pullRemote, 4000);
 setInterval(checkAutoRollover, 60000);
 </script>
