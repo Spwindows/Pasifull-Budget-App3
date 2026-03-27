@@ -1252,6 +1252,39 @@ function getDailyCardState(daily){
   const budget = daily.budget;
   const spent = daily.todaySpent;
   const left = daily.leftToday;
+  function renderTodayProgress(){
+  const daily = getDailyStats();
+  const bar = $("todayProgressBar");
+  const text = $("todayProgressText");
+
+  if(!bar || !text) return;
+
+  if(daily.budget <= 0){
+    bar.style.width = "0%";
+    bar.style.background = "linear-gradient(90deg,var(--danger),var(--danger))";
+    text.textContent = "No daily budget available";
+    return;
+  }
+
+  const usedPercentRaw = (daily.todaySpent / daily.budget) * 100;
+  const usedPercent = Math.max(0, usedPercentRaw);
+
+  bar.style.width = `${Math.min(usedPercent, 100)}%`;
+
+  if(daily.leftToday < 0){
+    bar.style.background = "linear-gradient(90deg,var(--danger),var(--danger))";
+    text.textContent = `${Math.round(usedPercent)}% used • over today’s budget`;
+  } else if(Math.abs(daily.leftToday) < 0.005){
+    bar.style.background = "linear-gradient(90deg,var(--warn),var(--warn))";
+    text.textContent = "100% used • today’s budget reached";
+  } else if(daily.todaySpent / daily.budget >= 0.8){
+    bar.style.background = "linear-gradient(90deg,var(--warn),var(--accent))";
+    text.textContent = `${Math.round(usedPercent)}% used`;
+  } else {
+    bar.style.background = "linear-gradient(90deg,var(--success),var(--accent))";
+    text.textContent = `${Math.round(usedPercent)}% used`;
+  }
+}
 
   if(budget <= 0){
     return {
@@ -1578,6 +1611,7 @@ function renderAll(){
   renderLogo();
   renderPeopleSelect();
   renderTop();
+  renderTodayProgress();
   renderUpcomingBills();
   renderSpends();
   renderBills();
