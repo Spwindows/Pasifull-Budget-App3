@@ -1630,7 +1630,6 @@ function renderSettings(){
   $("person1Name").value = state.person1Name;
   $("person2Name").value = state.person2Name;
   $("carryBalance").value = state.carryBalance === "0" ? "" : state.carryBalance;
-  $("income").value = state.income === "0" ? "" : state.income;
   $("expectedIncome").value = state.expectedIncome === "0" ? "" : state.expectedIncome;
   $("nextPayAmount").value = state.nextPayAmount === "0" ? "" : state.nextPayAmount;
   $("followingPayAmount").value = state.followingPayAmount === "0" ? "" : state.followingPayAmount;
@@ -1783,7 +1782,7 @@ function doWeeklyRoll(forced = false){
     weekStart: state.lastPay || todayISO(),
     weekEnd: state.nextPay || todayISO(),
     carry: String(num(state.carryBalance)),
-    income: String(currentCycleIncomeValue()),
+    income: String(getExtraPayTotal()),
     savedThisWeek: String(saveActual),
     spent: String(num(s.spent)),
     left: String(leftAfterSave)
@@ -1799,7 +1798,6 @@ function doWeeklyRoll(forced = false){
 
   state.lastPay = formatDate(nextPay);
   state.nextPay = followingPayDateISO();
-  state.income = "";
   state.nextPayAmount = String(followingPayAmountValue());
   state.followingPayAmount = "";
   state.lastAutoRollDate = formatDate(nextPay);
@@ -2092,7 +2090,6 @@ $("person1Name").addEventListener("input", e => { state.person1Name = e.target.v
 $("person2Name").addEventListener("input", e => { state.person2Name = e.target.value || "Person 2"; stateChanged(); renderPeopleSelect(); renderSpends(); clearSpendForm(); });
 
 $("carryBalance").addEventListener("input", e => { state.carryBalance = e.target.value; stateChanged(); renderTop(); renderHistory(); });
-$("income").addEventListener("input", e => { state.income = e.target.value; stateChanged(); renderTop(); });
 $("expectedIncome").addEventListener("input", e => { state.expectedIncome = e.target.value; stateChanged(); renderTop(); });
 $("nextPayAmount").addEventListener("input", e => { state.nextPayAmount = e.target.value; stateChanged(); renderTop(); });
 $("followingPayAmount").addEventListener("input", e => { state.followingPayAmount = e.target.value; stateChanged(); renderTop(); });
