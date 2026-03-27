@@ -94,6 +94,19 @@
       border:1px solid var(--line);
       border-radius:18px;
       padding:14px;
+      transition:background .2s ease,border-color .2s ease;
+    }
+    .stat.good{
+      background:rgba(34,197,94,.10);
+      border-color:rgba(34,197,94,.30);
+    }
+    .stat.caution{
+      background:rgba(245,158,11,.10);
+      border-color:rgba(245,158,11,.30);
+    }
+    .stat.bad{
+      background:rgba(239,68,68,.10);
+      border-color:rgba(239,68,68,.30);
     }
     h2{margin:0 0 10px;font-size:18px}
     h3{margin:0 0 8px;font-size:18px}
@@ -191,6 +204,9 @@
     @media (max-width:420px){
       .big{font-size:34px}
       .value{font-size:22px}
+      .row{
+        flex-direction:column;
+      }
     }
   </style>
 </head>
@@ -224,9 +240,20 @@
       <div id="availableNow" class="big">$0.00</div>
 
       <div class="grid2" style="margin-top:12px">
-        <div class="stat">
-          <div class="label">Daily available spend</div>
+        <div id="todayBudgetCard" class="stat">
+          <div class="label">Today’s budget</div>
           <div id="safeToday" class="value">$0.00</div>
+        </div>
+        <div id="leftTodayCard" class="stat">
+          <div class="label">Left today</div>
+          <div id="leftToday" class="value">$0.00</div>
+        </div>
+      </div>
+
+      <div class="grid2" style="margin-top:10px">
+        <div id="spentTodayCard" class="stat">
+          <div class="label">Spent today</div>
+          <div id="spentToday" class="value">$0.00</div>
         </div>
         <div class="stat">
           <div class="label">Next pay</div>
@@ -883,6 +910,13 @@ function spendTotal(){
   return state.spends.reduce((sum,s) => sum + num(s.amount), 0);
 }
 
+function spentTodayTotal(){
+  const todayStr = todayISO();
+  return state.spends.reduce((sum, s) => {
+    return sum + (s.date === todayStr ? num(s.amount) : 0);
+  }, 0);
+}
+
 function incrementDateByFrequency(date, frequency){
   const d = new Date(date);
   if(frequency === "weekly") d.setDate(d.getDate() + 7);
@@ -1067,7 +1101,7 @@ function nextCycleBillsTotal(){
 }
 
 function getSpendPotBase(){
-  return num(state.carryBalance) + getExtraPayTotal();
+  return num(state.carryBalance) + getExtraPayTotal() + num(state.income);
 }
 
 function summary(){
@@ -1129,7 +1163,6 @@ function summary(){
 
   const d = daysUntil(state.nextPay);
   const daysLeft = d === null ? Math.max(payFrequencyDays(), 1) : Math.max(d, 1);
-  const dailyAvailable = protectedSpendNow / daysLeft;
 
   return {
     carry,
@@ -1154,9 +1187,101 @@ function summary(){
     protectedSpendNow,
     lockedForCurrentBills,
     lockedForNextCycleGap,
-    dailyAvailable,
     days:d,
+    daysLeft,
     forecast:twoCycleResources - twoCycleObligations
+  };
+}
+
+function getDailyStats(){
+  const s = summary();
+  const daysLeft = Math.max(s.daysLeft || 1, 1);
+  const todaySpent = spentTodayTotal();
+  const todayBudget = s.protectedSpendNow > 0 ? s.protectedSpendNow / daysLeft : s.protectedSpendNow;
+  const leftToday = todayBudget - todaySpent;
+
+  return {
+    budget: todayBudget,
+    todaySpent,
+    leftToday,
+    daysLeft
+  };
+}
+
+function getDailyStatus(s){
+  const daily = getDailyStats();
+
+  if(s.protectedSpendNow < 0){
+    return ["dangerBox", `Overspending alert — hold back ${money(Math.abs(s.protectedSpendNow))} to stay safe.`];
+  }
+
+  if(daily.budget > 0 && daily.leftToday < 0){
+    return ["dangerBox", `You are over today’s budget by ${money(Math.abs(daily.leftToday))}. Your future daily limit will drop unless extra money is added.`];
+  }
+
+  if(daily.budget > 0 && Math.abs(daily.leftToday) < 0.005){
+    return ["warnBox", `You’ve used today’s full budget. Any more spending today will reduce future daily allowance.`];
+  }
+
+  if(daily.budget > 0 && daily.todaySpent < daily.budget){
+    const savedToday = daily.budget - daily.todaySpent;
+    return ["ok", `Great job — you are under today’s budget by ${money(savedToday)}. That extra will flow into your future allowance.`];
+  }
+
+  if(s.lockedForNextCycleGap > 0){
+    return ["warnBox", `Hold back ${money(s.lockedForNextCycleGap)} now to protect the next cycle.`];
+  }
+
+  if(s.lockedForCurrentBills > 0){
+    return ["ok", "You’re safe, and bill money is being protected."];
+  }
+
+  return ["ok","You are on track."];
+}
+
+function getDailyCardState(daily){
+  const budget = daily.budget;
+  const spent = daily.todaySpent;
+  const left = daily.leftToday;
+
+  if(budget <= 0){
+    return {
+      todayBudgetCard: "",
+      leftTodayCard: "",
+      spentTodayCard: ""
+    };
+  }
+
+  if(left < 0){
+    return {
+      todayBudgetCard: "bad",
+      leftTodayCard: "bad",
+      spentTodayCard: "bad"
+    };
+  }
+
+  if(Math.abs(left) < 0.005){
+    return {
+      todayBudgetCard: "caution",
+      leftTodayCard: "caution",
+      spentTodayCard: "caution"
+    };
+  }
+
+  const usedRatio = spent / budget;
+
+  if(usedRatio >= 0.8){
+    return {
+      todayBudgetCard: "caution",
+      leftTodayCard: "caution",
+      spentTodayCard: "caution"
+    };
+  }
+
+  return {
+    todayBudgetCard: "good",
+    leftTodayCard: "good",
+    spentTodayCard: "good"
   };
 }
 
@@ -1170,26 +1295,19 @@ function yearTotals(){
   };
 }
 
-function statusText(s){
-  if(s.protectedSpendNow < 0){
-    return ["dangerBox", `Overspending alert — hold back ${money(Math.abs(s.protectedSpendNow))} to stay safe.`];
-  }
-  if(s.lockedForNextCycleGap > 0){
-    return ["warnBox", `Hold back ${money(s.lockedForNextCycleGap)} now to protect the next cycle.`];
-  }
-  if(s.lockedForCurrentBills > 0){
-    return ["ok", "You’re safe, and bill money is being protected."];
-  }
-  return ["ok","You are on track."];
-}
-
 function renderTop(){
   const s = summary();
-  const st = statusText(s);
+  const daily = getDailyStats();
+  const st = getDailyStatus(s);
+  const cardState = getDailyCardState(daily);
 
   $("heroTitle").textContent = state.appName || "BudgetFlow Shared";
   $("availableNow").textContent = money(s.protectedSpendNow);
-  $("safeToday").textContent = money(s.dailyAvailable);
+
+  $("safeToday").textContent = money(daily.budget);
+  $("leftToday").textContent = money(daily.leftToday);
+  $("spentToday").textContent = money(daily.todaySpent);
+
   $("daysToPay").textContent = s.days === null ? "—" : s.days + "d";
   $("weekSpent").textContent = money(s.spent);
   $("weeklyBills").textContent = money(s.lockedForCurrentBills);
@@ -1216,6 +1334,10 @@ function renderTop(){
   $("sumRemainingGoal").textContent = money(s.remainingGoal);
   $("goalProgressPill").textContent = Math.round(s.goalProgress) + "%";
   $("goalProgressBar").style.width = `${Math.max(0, Math.min(100, s.goalProgress))}%`;
+
+  $("todayBudgetCard").className = "stat" + (cardState.todayBudgetCard ? " " + cardState.todayBudgetCard : "");
+  $("leftTodayCard").className = "stat" + (cardState.leftTodayCard ? " " + cardState.leftTodayCard : "");
+  $("spentTodayCard").className = "stat" + (cardState.spentTodayCard ? " " + cardState.spentTodayCard : "");
 
   const status = $("statusBox");
   status.className = "notice " + st[0];
