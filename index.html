@@ -271,14 +271,23 @@
           <div id="weeklyBills" class="value">$0.00</div>
         </div>
       </div>
-
+ 
+      <div style="margin-top:10px">
+        <div class="between" style="margin-bottom:6px">
+          <div class="small">Today progress</div>
+          <div id="todayProgressText" class="small">0% used</div>
+        </div>
+        <div class="progressWrap">
+          <div id="todayProgressBar" class="progressBar"></div>
+        </div>
+      </div>
+     
       <div class="row" style="margin-top:12px">
         <button id="goSpendsBtn" class="success">Add Spend</button>
         <button id="addExtraPayBtn" class="secondary">Add Extra Pay</button>
         <button id="startWeekBtn" class="warn">Start New Cycle</button>
       </div>
     </div>
-
     <div class="card">
       <h2>Locked Money</h2>
       <div class="summaryRow"><span>App balance</span><strong id="sumBankBalance">$0.00</strong></div>
