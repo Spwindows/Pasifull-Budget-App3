@@ -507,17 +507,7 @@
         <div class="tiny" style="margin-top:6px">Set this once at the beginning. After that, BudgetFlow runs the balance for you.</div>
       </div>
 
-      <div class="row" style="margin-top:10px">
-        <div>
-          <div class="label">Main pay this cycle</div>
-          <input id="income" type="number" min="0" placeholder="0" />
-        </div>
-        <div>
-          <div class="label">Expected default pay</div>
-          <input id="expectedIncome" type="number" min="0" placeholder="0" />
-        </div>
-      </div>
-
+      
       <div class="row" style="margin-top:10px">
         <div>
           <div class="label">Next pay amount</div>
@@ -674,7 +664,6 @@ const defaultState = {
   person1Name:"Person 1",
   person2Name:"Person 2",
   carryBalance:"",
-  income:"",
   expectedIncome:"",
   nextPayAmount:"",
   followingPayAmount:"",
@@ -873,7 +862,6 @@ function normaliseState(raw){
   merged.person1Name = merged.person1Name || "Person 1";
   merged.person2Name = merged.person2Name || "Person 2";
   merged.carryBalance = String(num(merged.carryBalance));
-  merged.income = String(num(merged.income));
   merged.expectedIncome = String(num(merged.expectedIncome));
   merged.nextPayAmount = String(num(merged.nextPayAmount));
   merged.followingPayAmount = String(num(merged.followingPayAmount));
@@ -1126,12 +1114,11 @@ function nextCycleBillsTotal(){
 }
 
 function getSpendPotBase(){
-  return num(state.carryBalance) + getExtraPayTotal() + num(state.income);
+  return num(state.carryBalance) + getExtraPayTotal();
 }
 
 function summary(){
   const carry = num(state.carryBalance);
-  const currentIncome = num(state.income);
   const extraPay = getExtraPayTotal();
   const nextIncome = nextPayAmountValue();
   const followingIncome = followingPayAmountValue();
@@ -1189,7 +1176,6 @@ function summary(){
 
   return {
     carry,
-    currentIncome,
     extraPay,
     nextIncome,
     followingIncome,
@@ -1370,7 +1356,7 @@ function renderTop(){
   $("weeklyBills").textContent = money(s.lockedForCurrentBills);
 
   $("sumCarry").textContent = money(s.carry);
-  $("sumIncome").textContent = money(s.currentIncome);
+  $("sumIncome").textContent = money(getExtraPayTotal());
   $("sumExtraPay").textContent = money(s.extraPay);
   $("sumNextPayAmount").textContent = money(s.nextIncome);
   $("sumFollowingPayAmount").textContent = money(s.followingIncome);
