@@ -66,7 +66,7 @@
       margin-top:12px;
       border-radius:16px;
       padding:12px 14px;
-      font-size:13px
+      font-size:13px;
     }
     .ok{
       background:rgba(34,197,94,.12);
@@ -147,7 +147,12 @@
       padding:12px;
       margin-top:10px;
     }
-    .between{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .between{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center
+    }
     .summaryRow{
       display:flex;
       justify-content:space-between;
@@ -366,7 +371,6 @@
     <div class="card">
       <h2>Quick Summary</h2>
       <div class="summaryRow"><span>Opening balance / carry forward</span><strong id="sumCarry">$0.00</strong></div>
-      <div class="summaryRow"><span>Main pay this cycle</span><strong id="sumIncome">$0.00</strong></div>
       <div class="summaryRow"><span>Extra pay added</span><strong id="sumExtraPay">$0.00</strong></div>
       <div class="summaryRow"><span>Next pay amount</span><strong id="sumNextPayAmount">$0.00</strong></div>
       <div class="summaryRow"><span>Following pay amount</span><strong id="sumFollowingPayAmount">$0.00</strong></div>
@@ -507,7 +511,6 @@
         <div class="tiny" style="margin-top:6px">Set this once at the beginning. After that, BudgetFlow runs the balance for you.</div>
       </div>
 
-      
       <div class="row" style="margin-top:10px">
         <div>
           <div class="label">Next pay amount</div>
@@ -517,6 +520,11 @@
           <div class="label">Following pay amount</div>
           <input id="followingPayAmount" type="number" min="0" placeholder="Optional" />
         </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <div class="label">Expected default pay</div>
+        <input id="expectedIncome" type="number" min="0" placeholder="0" />
       </div>
 
       <div class="row" style="margin-top:10px">
@@ -659,31 +667,31 @@ const payFrequencies = {
 };
 
 const defaultState = {
-  appName:"BudgetFlow Shared",
-  logo:"",
-  person1Name:"Person 1",
-  person2Name:"Person 2",
-  carryBalance:"",
-  expectedIncome:"",
-  nextPayAmount:"",
-  followingPayAmount:"",
-  savingsGoal:"",
-  savingsBalance:"",
-  weeklySavingsTarget:"",
-  funTarget:"",
-  lastPay:"",
-  nextPay:"",
-  payFrequency:"weekly",
-  currency:"AUD",
-  lastAutoRollDate:"",
-  bills:[
-    {id:1,name:"Rent / Mortgage",amount:"",frequency:"weekly",dueDate:"",fundingMode:"sinking_fund"},
-    {id:2,name:"Electricity",amount:"",frequency:"monthly",dueDate:"",fundingMode:"sinking_fund"}
+  appName: "BudgetFlow Shared",
+  logo: "",
+  person1Name: "Person 1",
+  person2Name: "Person 2",
+  carryBalance: "",
+  expectedIncome: "",
+  nextPayAmount: "",
+  followingPayAmount: "",
+  savingsGoal: "",
+  savingsBalance: "",
+  weeklySavingsTarget: "",
+  funTarget: "",
+  lastPay: "",
+  nextPay: "",
+  payFrequency: "weekly",
+  currency: "AUD",
+  lastAutoRollDate: "",
+  bills: [
+    {id: 1, name: "Rent / Mortgage", amount: "", frequency: "weekly", dueDate: "", fundingMode: "sinking_fund"},
+    {id: 2, name: "Electricity", amount: "", frequency: "monthly", dueDate: "", fundingMode: "sinking_fund"}
   ],
-  spends:[],
-  history:[],
-  extraPays:[],
-  paidBillOccurrences:[]
+  spends: [],
+  history: [],
+  extraPays: [],
+  paidBillOccurrences: []
 };
 
 const params = new URLSearchParams(location.search);
@@ -748,9 +756,9 @@ function cap(s){
 
 function money(n){
   return new Intl.NumberFormat("en", {
-    style:"currency",
+    style: "currency",
     currency: state.currency || "AUD",
-    maximumFractionDigits:2
+    maximumFractionDigits: 2
   }).format(Number.isFinite(n) ? n : 0);
 }
 
@@ -782,10 +790,6 @@ function recalcPayDates(){
 
 function getExtraPayTotal(){
   return (state.extraPays || []).reduce((sum, p) => sum + num(p.amount), 0);
-}
-
-function currentCycleIncomeValue(){
-  return num(state.income) + getExtraPayTotal();
 }
 
 function nextPayAmountValue(){
@@ -1196,9 +1200,9 @@ function summary(){
     protectedSpendNow,
     lockedForCurrentBills,
     lockedForNextCycleGap,
-    days:d,
+    days: d,
     daysLeft,
-    forecast:twoCycleResources - twoCycleObligations
+    forecast: twoCycleResources - twoCycleObligations
   };
 }
 
@@ -1356,7 +1360,6 @@ function renderTop(){
   $("weeklyBills").textContent = money(s.lockedForCurrentBills);
 
   $("sumCarry").textContent = money(s.carry);
-  $("sumIncome").textContent = money(getExtraPayTotal());
   $("sumExtraPay").textContent = money(s.extraPay);
   $("sumNextPayAmount").textContent = money(s.nextIncome);
   $("sumFollowingPayAmount").textContent = money(s.followingIncome);
@@ -1617,7 +1620,7 @@ function renderHistory(){
     div.innerHTML = `
       <div style="font-weight:700">${esc(h.label || h.weekStart)}</div>
       <div class="small" style="margin-top:6px">
-        B/F ${money(num(h.carry))} • Income ${money(num(h.income))} • Saved ${money(num(h.savedThisWeek))} • Spent ${money(num(h.spent))}
+        B/F ${money(num(h.carry))} • Extra Pay ${money(num(h.income))} • Saved ${money(num(h.savedThisWeek))} • Spent ${money(num(h.spent))}
       </div>
       <div class="small" style="margin-top:4px">Left: ${money(num(h.left))}</div>
     `;
@@ -1876,7 +1879,7 @@ function useSavings(){
 }
 
 function exportCsv(){
-  const rows = [["Cycle Start","Cycle End","Carry Forward","Income","Saved This Cycle","Spent","Left"]];
+  const rows = [["Cycle Start","Cycle End","Carry Forward","Extra Pay","Saved This Cycle","Spent","Left"]];
   state.history.forEach(h => rows.push([h.weekStart,h.weekEnd,h.carry,h.income,h.savedThisWeek,h.spent,h.left]));
   const csv = rows.map(r => r.map(c => '"' + String(c ?? "").replaceAll('"','""') + '"').join(",")).join("\n");
   const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
@@ -2027,12 +2030,12 @@ $("useSavingsBtn").addEventListener("click", useSavings);
 
 $("addBillBtn").addEventListener("click", () => {
   state.bills.push({
-    id:Date.now(),
-    name:"",
-    amount:"",
-    frequency:"weekly",
-    dueDate:"",
-    fundingMode:"sinking_fund"
+    id: Date.now(),
+    name: "",
+    amount: "",
+    frequency: "weekly",
+    dueDate: "",
+    fundingMode: "sinking_fund"
   });
   stateChanged();
   renderBills();
