@@ -107,6 +107,12 @@
       color:#bae6fd;
     }
 
+    .cycleLock{
+      background:rgba(148,163,184,.12);
+      border:1px solid rgba(148,163,184,.25);
+      color:#dbeafe;
+    }
+
     .label{font-size:12px;color:var(--muted)}
     .big{font-size:40px;font-weight:900;margin-top:4px}
     .value{font-size:26px;font-weight:800;margin-top:6px}
@@ -385,6 +391,7 @@
       </div>
       <div id="statusBox" class="notice ok">You are on track.</div>
       <div id="syncBox" class="notice sync">Connecting…</div>
+      <div id="cycleLockBox" class="notice cycleLock">Cycle active.</div>
     </div>
 
     <div id="installCard" class="card hidden">
@@ -446,7 +453,6 @@
       <div class="row" style="margin-top:12px">
         <button id="goSpendsBtn" class="success">Add Spend</button>
         <button id="addExtraPayBtn" class="secondary">Add Extra Pay</button>
-        <button id="startWeekBtn" class="warn">Start New Cycle</button>
       </div>
     </div>
 
@@ -501,6 +507,10 @@
   <section id="page-spends" class="hidden">
     <div class="card">
       <h2>Add Spend</h2>
+
+      <div class="notice cycleLock" style="margin-top:0;margin-bottom:12px;">
+        Current cycle is locked to your chosen pay date. The app rolls over automatically on payday.
+      </div>
 
       <div class="label" style="margin-bottom:8px">Quick add</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
@@ -1464,6 +1474,33 @@ function renderTodayProgress(){
   }
 }
 
+function renderCycleLock(){
+  const box = $("cycleLockBox");
+  const d = daysUntil(state.nextPay);
+
+  if(!state.nextPay){
+    box.textContent = "Set your pay date in Settings to lock this cycle.";
+    return;
+  }
+
+  if(d === null){
+    box.textContent = "Cycle active.";
+    return;
+  }
+
+  if(d <= 0){
+    box.textContent = "Cycle locked • rollover due now or very soon.";
+    return;
+  }
+
+  if(d === 1){
+    box.textContent = "Cycle locked • automatic rollover tomorrow.";
+    return;
+  }
+
+  box.textContent = `Cycle locked • automatic rollover in ${d} days.`;
+}
+
 function yearTotals(){
   const year = new Date().getFullYear();
   const hist = state.history.filter(h => new Date((h.weekStart || todayISO()) + "T00:00:00").getFullYear() === year);
@@ -1520,6 +1557,8 @@ function renderTop(){
   const status = $("statusBox");
   status.className = "notice " + st[0];
   status.textContent = st[1];
+
+  renderCycleLock();
 }
 
 function renderLogo(){
@@ -1950,11 +1989,6 @@ function checkAutoRollover(){
   if(rolled) setSyncStatus("New pay cycle started automatically.");
 }
 
-function startNewWeekManual(){
-  if(!confirm("Start the next pay cycle now? This archives the current cycle, moves savings, clears spends, rolls forward to the next pay, and auto-deducts due bills.")) return;
-  doWeeklyRoll(true);
-}
-
 function addToSavings(){
   const suggested = num(state.weeklySavingsTarget) || 0;
   const input = prompt("How much do you want to move from spending into savings?", suggested ? String(suggested) : "");
@@ -2017,8 +2051,16 @@ function exportCsv(){
   URL.revokeObjectURL(url);
 }
 
+function getShareLink(){
+  return `${location.origin}${location.pathname}?budget=${encodeURIComponent(budgetId)}`;
+}
+
 function copySharedLink(){
-  navigator.clipboard.writeText(window.location.href).then(() => setSyncStatus("Shared link copied."));
+  navigator.clipboard.writeText(getShareLink()).then(() => {
+    setSyncStatus("Shared link copied.");
+  }).catch(() => {
+    setSyncStatus("Could not copy link.");
+  });
 }
 
 function generateBudgetId(){
@@ -2028,7 +2070,7 @@ function generateBudgetId(){
 function createNewCouple(){
   if(!isAdmin) return;
   const newId = generateBudgetId();
-  const newUrl = location.origin + location.pathname + "?budget=" + newId;
+  const newUrl = `${location.origin}${location.pathname}?budget=${encodeURIComponent(newId)}`;
   $("newCoupleLink").textContent = newUrl;
   $("coupleModal").classList.remove("hidden");
 }
@@ -2149,7 +2191,6 @@ $("fabBtn").addEventListener("click", () => {
 $("addExtraPayBtn").addEventListener("click", addExtraPay);
 $("saveSpendBtn").addEventListener("click", saveSpend);
 $("cancelEditBtn").addEventListener("click", clearSpendForm);
-$("startWeekBtn").addEventListener("click", startNewWeekManual);
 
 $("addSavingsBtn").addEventListener("click", addToSavings);
 $("useSavingsBtn").addEventListener("click", useSavings);
